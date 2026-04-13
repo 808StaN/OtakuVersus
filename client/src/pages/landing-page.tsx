@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { HeroSection } from '../components/hero-section';
+import { GameModeSection } from '../components/game-mode-section';
 import { LeaderboardTable } from '../components/game/leaderboard-table';
 import { useAuth } from '../features/auth/auth-context';
 import { useLeaderboardQuery } from '../features/leaderboard/use-leaderboard-query';
@@ -27,7 +27,7 @@ export function LandingPage() {
 
   return (
     <div className="space-y-10">
-      <HeroSection
+      <GameModeSection
         isAuthenticated={isAuthenticated}
         onMultiplayerStart={handleMultiplayerStart}
         onSoloStart={handleSoloStart}
