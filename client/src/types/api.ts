@@ -111,6 +111,7 @@ export type EloLeaderboardRow = {
   nickname: string;
   elo: number;
   matchesPlayed: number;
+  winRatio: number;
   playedAt: string | null;
 };
 
@@ -120,12 +121,30 @@ export type UserHistoryResponse = {
     averageScore: number;
     bestScore: number;
     rank: string;
+    singleplayer: {
+      sessionsPlayed: number;
+      averageScore: number;
+      bestScore: number;
+      averageAccuracy: number;
+    };
+    multiplayer: {
+      matchesPlayed: number;
+      wins: number;
+      losses: number;
+      draws: number;
+      winRatio: number;
+      totalLpChange: number;
+      bestLpGain: number;
+      peakElo: number;
+    };
   };
   history: Array<{
     sessionId: string;
     score: number;
     correctAnswers: number;
     totalRounds: number;
+    mode: 'SINGLEPLAYER' | 'MULTIPLAYER';
+    eloDelta: number;
     accuracy: number;
     playedAt: string;
   }>;
