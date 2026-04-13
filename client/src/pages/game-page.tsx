@@ -52,6 +52,7 @@ export function GamePage() {
     remainingMs: number;
     durationMs: number;
   } | null>(null);
+  const [preRoundCountdown, setPreRoundCountdown] = useState<number | null>(null);
 
   const activeRoundOrder = frozenRound?.order ?? sessionQuery.data?.currentRound?.order;
   const currentRoundId = frozenRound?.id ?? sessionQuery.data?.currentRound?.id;
@@ -81,7 +82,30 @@ export function GamePage() {
         : ROUND_TIME_MS;
     setMultiplayerTimerState({ remainingMs: status.roundRemainingMs, durationMs });
     setTimerMs(status.roundRemainingMs);
+
+    if (typeof status.roundStartedAtMs === 'number') {
+      const msUntilStart = status.roundStartedAtMs - Date.now();
+      if (msUntilStart > 0) {
+        setPreRoundCountdown(Math.max(1, Math.ceil(msUntilStart / 1000)));
+      } else {
+        setPreRoundCountdown(null);
+      }
+    } else {
+      setPreRoundCountdown(null);
+    }
   }, [multiplayerStatusQuery.data]);
+
+  useEffect(() => {
+    if (preRoundCountdown === null) return;
+    const interval = window.setInterval(() => {
+      setPreRoundCountdown((current) => {
+        if (current === null) return null;
+        return current > 1 ? current - 1 : null;
+      });
+    }, 1000);
+
+    return () => window.clearInterval(interval);
+  }, [preRoundCountdown]);
 
   useEffect(() => {
     if (!currentRoundId) return;
@@ -97,14 +121,16 @@ export function GamePage() {
 
   useEffect(() => {
     if (!multiplayerStatusQuery.data?.multiplayer) return;
+    if (preRoundCountdown !== null) return;
     const interval = window.setInterval(() => {
       setTimerMs((current) => Math.max(0, current - 100));
     }, 100);
 
     return () => window.clearInterval(interval);
-  }, [multiplayerStatusQuery.data?.multiplayer]);
+  }, [multiplayerStatusQuery.data?.multiplayer, preRoundCountdown]);
 
-  const disableAnswers = answerMutation.isPending || Boolean(feedback) || Boolean(pendingRoundOrder);
+  const disableAnswers =
+    answerMutation.isPending || Boolean(feedback) || Boolean(pendingRoundOrder) || preRoundCountdown !== null;
 
   const continueAfterAnswer = async () => {
     setFeedback(null);
@@ -347,6 +373,15 @@ export function GamePage() {
           </p>
         ) : null}
       </Card>
+
+      {preRoundCountdown !== null ? (
+        <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-[1px]">
+          <div className="impact-burst border-[4px] border-black bg-[#ffd000] px-9 py-7 text-center shadow-panel">
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-black/70">Get Ready</p>
+            <p className="mt-2 text-7xl font-black leading-none text-[#bc002d]">{preRoundCountdown}</p>
+          </div>
+        </div>
+      ) : null}
 
       {roundToast ? (
         <aside

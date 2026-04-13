@@ -59,6 +59,9 @@ export async function joinMultiplayerQueueController(req: Request, res: Response
 }
 
 export async function multiplayerQueueStatusController(req: Request, res: Response) {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
   const payload = await getMultiplayerQueueStatus(req.params.ticketId);
   res.status(200).json(payload);
 }

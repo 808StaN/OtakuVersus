@@ -37,6 +37,7 @@ export function optionalAuth(req: Request, _res: Response, next: NextFunction) {
     req.user = parseAuthUser(req) ?? undefined;
     return next();
   } catch (_error) {
-    return next(new ApiError(401, 'Invalid or expired token'));
+    req.user = undefined;
+    return next();
   }
 }

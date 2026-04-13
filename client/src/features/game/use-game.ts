@@ -68,8 +68,9 @@ export function useMultiplayerQueueStatusQuery(ticketId: string | null) {
     enabled: Boolean(ticketId),
     refetchInterval: (query) => {
       const data = query.state.data;
-      return data?.status === 'waiting' ? 2_000 : false;
-    }
+      return data?.status === 'matched' ? false : 2_000;
+    },
+    refetchIntervalInBackground: true
   });
 }
 

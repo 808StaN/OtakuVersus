@@ -20,8 +20,12 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   const guestId = getOrCreateGuestId();
   const response = await fetch(`${API_URL}${path}`, {
     method: options.method ?? 'GET',
+    cache: 'no-store',
     headers: {
       'Content-Type': 'application/json',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      Pragma: 'no-cache',
+      Expires: '0',
       'X-Guest-Id': guestId,
       ...(token ? { Authorization: `Bearer ${token}` } : {})
     },

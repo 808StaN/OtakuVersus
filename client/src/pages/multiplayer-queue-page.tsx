@@ -1,40 +1,97 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { HttpError } from '../api/http';
+import { getMultiplayerQueueStatus } from '../api/game-api';
 import { Card } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import {
-  useJoinMultiplayerQueueMutation,
-  useMultiplayerQueueStatusQuery
-} from '../features/game/use-game';
+import { ErrorState } from '../components/ui/error-state';
+import { useJoinMultiplayerQueueMutation } from '../features/game/use-game';
+import { MultiplayerQueueResponse } from '../types/api';
 
 export function MultiplayerQueuePage() {
   const navigate = useNavigate();
   const joinMutation = useJoinMultiplayerQueueMutation();
   const [ticketId, setTicketId] = useState<string | null>(null);
-  const statusQuery = useMultiplayerQueueStatusQuery(ticketId);
+  const [queueState, setQueueState] = useState<MultiplayerQueueResponse | null>(null);
+  const [queueError, setQueueError] = useState<string | null>(null);
+  const hasJoinedRef = useRef(false);
+
+  const joinQueue = async () => {
+    try {
+      setQueueError(null);
+      const payload = await joinMutation.mutateAsync(5);
+      setQueueState(payload);
+      setTicketId(payload.ticketId);
+      if (payload.status === 'matched' && payload.sessionId) {
+        navigate(`/game/${payload.sessionId}`, { replace: true });
+      }
+    } catch (error) {
+      setQueueError(error instanceof HttpError ? error.message : 'Unable to connect to multiplayer queue');
+    }
+  };
 
   useEffect(() => {
-    let active = true;
-    joinMutation.mutate(5, {
-      onSuccess: (payload) => {
-        if (!active) return;
-        setTicketId(payload.ticketId);
-        if (payload.status === 'matched' && payload.sessionId) {
-          navigate(`/game/${payload.sessionId}`, { replace: true });
-        }
-      }
-    });
-    return () => {
-      active = false;
-    };
+    if (hasJoinedRef.current) return;
+    hasJoinedRef.current = true;
+    void joinQueue();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    if (statusQuery.data?.status === 'matched' && statusQuery.data.sessionId) {
-      navigate(`/game/${statusQuery.data.sessionId}`, { replace: true });
-    }
-  }, [statusQuery.data, navigate]);
+    if (!ticketId) return;
+
+    let active = true;
+    const fetchStatus = async () => {
+      try {
+        const payload = await getMultiplayerQueueStatus(ticketId);
+        if (!active) return;
+        setQueueState(payload);
+        if (payload.status === 'matched' && payload.sessionId) {
+          navigate(`/game/${payload.sessionId}`, { replace: true });
+        }
+      } catch (error) {
+        if (!active) return;
+        setQueueError(error instanceof HttpError ? error.message : 'Unable to refresh queue status');
+      }
+    };
+
+    void fetchStatus();
+    const interval = window.setInterval(() => {
+      void fetchStatus();
+    }, 1200);
+
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+    };
+  }, [ticketId, navigate]);
+
+  if (queueError) {
+    return (
+      <ErrorState
+        title="Queue connection failed"
+        description={queueError}
+        onRetry={() => {
+          hasJoinedRef.current = false;
+          setTicketId(null);
+          setQueueState(null);
+          setQueueError(null);
+          joinMutation.reset();
+          void joinQueue();
+        }}
+      />
+    );
+  }
+
+  if (joinMutation.isPending && !queueState) {
+    return (
+      <Card className="mx-auto max-w-2xl space-y-5 text-center">
+        <span className="comic-kicker">Multiplayer Mode</span>
+        <h1 className="panel-title text-6xl">Connecting...</h1>
+        <div className="mx-auto h-5 w-5 animate-spin border-[4px] border-black border-t-[#bc002d]" />
+      </Card>
+    );
+  }
 
   return (
     <Card className="mx-auto max-w-2xl space-y-5 text-center">
@@ -44,9 +101,9 @@ export function MultiplayerQueuePage() {
         Waiting in queue. You will be connected automatically when another player joins.
       </p>
       <div className="mx-auto h-5 w-5 animate-spin border-[4px] border-black border-t-[#bc002d]" />
-      {statusQuery.data?.status === 'matched' ? (
+      {queueState?.status === 'matched' ? (
         <p className="font-black text-[#bc002d]">
-          Match found with {statusQuery.data.opponentNickname ?? 'Opponent'}!
+          Match found with {queueState.opponentNickname ?? 'Opponent'}!
         </p>
       ) : null}
       <div className="flex justify-center">
@@ -57,4 +114,3 @@ export function MultiplayerQueuePage() {
     </Card>
   );
 }
-

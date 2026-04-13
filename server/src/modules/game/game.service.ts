@@ -27,6 +27,7 @@ type MatchmakingJoinInput = {
 type MatchPlayerState = {
   sessionId: string;
   userId: string;
+  participantKey: string;
   nickname: string;
   finishedSummary?: {
     score: number;
@@ -57,6 +58,7 @@ type AnimeMeta = {
 const GUEST_NICKNAME = 'Guest';
 const GUEST_PASSWORD_HASH = '__guest_account__';
 const MULTIPLAYER_ROUND_TIME_MS = 30_000;
+const MULTIPLAYER_START_COUNTDOWN_MS = 3_000;
 const MIN_MULTIPLAYER_REMAINING_MS = 1_000;
 const animeMetaCache = new Map<string, AnimeMeta | null>();
 const multiplayerMatches = new Map<string, MultiplayerMatchState>();
@@ -64,6 +66,7 @@ const sessionToMatchId = new Map<string, string>();
 const multiplayerQueue: Array<{
   ticketId: string;
   userId: string;
+  participantKey: string;
   displayName: string;
   roundsCount: number;
 }> = [];
@@ -81,6 +84,16 @@ function buildGuestPlayerName() {
   return `Player ${Math.floor(1000 + Math.random() * 9000)}`;
 }
 
+function buildParticipantKey(userId: string | undefined, guestId: string | undefined) {
+  if (!userId) {
+    const guestKey = sanitizeGuestId(guestId ?? '') || 'public';
+    return `guest:${guestKey}`;
+  }
+
+  const clientKey = sanitizeGuestId(guestId ?? '') || 'auth';
+  return `user:${userId}:${clientKey}`;
+}
+
 function getMatchBySessionId(sessionId: string) {
   const matchId = sessionToMatchId.get(sessionId);
   if (!matchId) return null;
@@ -92,7 +105,11 @@ function getOpponentState(match: MultiplayerMatchState, sessionId: string) {
 }
 
 function getTimerRemainingMs(timer: { startedAtMs: number; durationMs: number }) {
-  const elapsed = Date.now() - timer.startedAtMs;
+  const now = Date.now();
+  if (now < timer.startedAtMs) {
+    return timer.durationMs;
+  }
+  const elapsed = now - timer.startedAtMs;
   return Math.max(0, timer.durationMs - elapsed);
 }
 
@@ -404,10 +421,7 @@ async function buildPublicRound(round: {
   };
 }
 
-export async function startGameSession(input: StartSessionInput) {
-  const userId = await resolveSessionUserId(input.userId, input.guestId);
-  const roundsCount = input.roundsCount ?? 5;
-
+async function buildUniqueSceneSelection(roundsCount: number) {
   const scenePool = await prisma.scene.findMany({
     select: {
       id: true,
@@ -436,21 +450,25 @@ export async function startGameSession(input: StartSessionInput) {
     throw new ApiError(400, `Need at least ${roundsCount} unique anime scenes in dataset`);
   }
 
-  const selected = uniqueScenes.slice(0, roundsCount);
+  return uniqueScenes.slice(0, roundsCount);
+}
 
-  const createdSession = await prisma.$transaction(async (tx) => {
+async function createSessionFromSelectedScenes(
+  userId: string,
+  selectedScenes: Array<{ id: string; animeTitle: { name: string } }>
+) {
+  return prisma.$transaction(async (tx) => {
     const session = await tx.gameSession.create({
       data: {
         userId,
-        totalRounds: roundsCount,
+        totalRounds: selectedScenes.length,
         currentRoundIndex: 1,
         status: GameSessionStatus.ACTIVE
       }
     });
 
-    for (let i = 0; i < selected.length; i += 1) {
-      const scene = selected[i];
-
+    for (let i = 0; i < selectedScenes.length; i += 1) {
+      const scene = selectedScenes[i];
       await tx.round.create({
         data: {
           sessionId: session.id,
@@ -463,6 +481,13 @@ export async function startGameSession(input: StartSessionInput) {
 
     return session;
   });
+}
+
+export async function startGameSession(input: StartSessionInput) {
+  const userId = await resolveSessionUserId(input.userId, input.guestId);
+  const roundsCount = input.roundsCount ?? 5;
+  const selected = await buildUniqueSceneSelection(roundsCount);
+  const createdSession = await createSessionFromSelectedScenes(userId, selected);
 
   return getGameSessionDetails(userId, createdSession.id);
 }
@@ -813,10 +838,41 @@ export async function finishGameSession(userId: string | undefined, sessionId: s
 export async function joinMultiplayerQueue(input: MatchmakingJoinInput) {
   const roundsCount = input.roundsCount ?? 5;
   const resolvedUserId = await resolveSessionUserId(input.userId, input.guestId);
+  const participantKey = buildParticipantKey(input.userId, input.guestId);
   const displayName = input.displayName?.trim() || (input.userId ? 'Player' : buildGuestPlayerName());
 
-  const existingTicket = multiplayerQueue.find((entry) => entry.userId === resolvedUserId);
+  // Idempotent re-join: if this user is already in an active match, return that match again.
+  for (const match of multiplayerMatches.values()) {
+    const self = match.players.find((player) => player.participantKey === participantKey);
+    if (!self) continue;
+    const opponent = getOpponentState(match, self.sessionId);
+    if (!self.finishedSummary) {
+      return {
+        status: 'matched' as const,
+        ticketId: `match-${match.id}`,
+        sessionId: self.sessionId,
+        opponentNickname: opponent.nickname
+      };
+    }
+  }
+
+  const existingTicket = multiplayerQueue.find((entry) => entry.participantKey === participantKey);
   if (existingTicket) {
+    const existingStatus = queueStatus.get(existingTicket.ticketId);
+    if (existingStatus?.status === 'matched') {
+      return {
+        status: 'matched' as const,
+        ticketId: existingTicket.ticketId,
+        sessionId: existingStatus.sessionId,
+        opponentNickname: existingStatus.opponentNickname
+      };
+    }
+    if (existingStatus?.status === 'waiting') {
+      return {
+        status: 'waiting' as const,
+        ticketId: existingTicket.ticketId
+      };
+    }
     queueStatus.set(existingTicket.ticketId, { status: 'waiting' });
     return {
       status: 'waiting' as const,
@@ -824,7 +880,7 @@ export async function joinMultiplayerQueue(input: MatchmakingJoinInput) {
     };
   }
 
-  const opponentIndex = multiplayerQueue.findIndex((entry) => entry.userId !== resolvedUserId);
+  const opponentIndex = multiplayerQueue.findIndex((entry) => entry.participantKey !== participantKey);
 
   const ticketId = randomUUID();
 
@@ -832,6 +888,7 @@ export async function joinMultiplayerQueue(input: MatchmakingJoinInput) {
     multiplayerQueue.push({
       ticketId,
       userId: resolvedUserId,
+      participantKey,
       displayName,
       roundsCount
     });
@@ -844,10 +901,17 @@ export async function joinMultiplayerQueue(input: MatchmakingJoinInput) {
   }
 
   const opponent = multiplayerQueue.splice(opponentIndex, 1)[0];
+  const sharedRoundsCount = Math.min(roundsCount, opponent.roundsCount);
+  const sharedScenes = await buildUniqueSceneSelection(sharedRoundsCount);
+
+  const [playerSessionRecord, opponentSessionRecord] = await Promise.all([
+    createSessionFromSelectedScenes(resolvedUserId, sharedScenes),
+    createSessionFromSelectedScenes(opponent.userId, sharedScenes)
+  ]);
 
   const [playerSession, opponentSession] = await Promise.all([
-    startGameSession({ userId: resolvedUserId, roundsCount }),
-    startGameSession({ userId: opponent.userId, roundsCount: opponent.roundsCount })
+    getGameSessionDetails(resolvedUserId, playerSessionRecord.id),
+    getGameSessionDetails(opponent.userId, opponentSessionRecord.id)
   ]);
 
   const matchId = randomUUID();
@@ -857,11 +921,13 @@ export async function joinMultiplayerQueue(input: MatchmakingJoinInput) {
       {
         sessionId: playerSession.session.id,
         userId: resolvedUserId,
+        participantKey,
         nickname: displayName
       },
       {
         sessionId: opponentSession.session.id,
         userId: opponent.userId,
+        participantKey: opponent.participantKey,
         nickname: opponent.displayName
       }
     ],
@@ -871,7 +937,7 @@ export async function joinMultiplayerQueue(input: MatchmakingJoinInput) {
     },
     roundTimers: {
       1: {
-        startedAtMs: Date.now(),
+        startedAtMs: Date.now() + MULTIPLAYER_START_COUNTDOWN_MS,
         durationMs: MULTIPLAYER_ROUND_TIME_MS,
         shortened: false
       }
