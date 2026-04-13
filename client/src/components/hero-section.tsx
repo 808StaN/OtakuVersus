@@ -23,7 +23,7 @@ export function HeroSection({
       <div className="absolute inset-0 bg-black/55" />
       <div className="manga-grid absolute inset-0 opacity-25" />
       <div className="absolute right-4 top-4 border-[4px] border-black bg-[#ffd000] px-3 py-1 text-xs font-black uppercase tracking-[0.14em] shadow-sticker">
-        Cover Story
+        Choose Your Mode
       </div>
 
       <div className="relative z-10 comic-gutters">
@@ -42,8 +42,8 @@ export function HeroSection({
           </div>
 
           <div className="speech-bubble max-w-2xl">
-            Enter a stylized scene arena and guess titles from pure atmosphere. 5 rounds, fast
-            decisions, and a leaderboard for the sharpest otaku.
+            Step into an anime guessing game and name the title. 5 rounds, fast picks, and one
+            goal: prove you're the biggest anime fan.
           </div>
 
           <div className="flex flex-wrap items-center gap-3 pt-1">
@@ -73,9 +73,9 @@ export function HeroSection({
 
         <div className="space-y-3 panel-overlap-right">
           <div className="manga-panel p-4">
-            <p className="text-xs uppercase tracking-[0.16em] text-[#cf1a4f]">Main Street Frame</p>
+            <p className="text-xs uppercase tracking-[0.16em] text-[#cf1a4f]">Solo Challenge</p>
             <p className="mt-2 text-sm text-base-ink/85">
-              Urban anime backdrop now drives the whole page mood to preview your final paid assets style.
+              Play a classic solo run with 5 rounds and immediate score feedback after each answer.
             </p>
             <div className="mt-3">
               <Button onClick={onSoloStart} loading={soloLoading} size="sm">

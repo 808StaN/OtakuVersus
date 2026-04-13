@@ -40,8 +40,8 @@ export function HistoryPage() {
           <p className="mt-2 text-4xl font-black text-[#cf1a4f]">{historyQuery.data.stats.bestScore}</p>
         </Card>
         <Card>
-          <p className="text-xs uppercase tracking-[0.16em] text-base-ink/70">Current Badge</p>
-          <p className="mt-2 text-2xl font-black text-[#ff7a00]">{historyQuery.data.stats.rank}</p>
+          <p className="text-xs uppercase tracking-[0.16em] text-base-ink/70">Average Score</p>
+          <p className="mt-2 text-4xl font-black text-[#ff7a00]">{Math.round(historyQuery.data.stats.averageScore)}</p>
         </Card>
       </section>
 
