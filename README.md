@@ -1,23 +1,42 @@
 # OtakuVersus
 
-OtakuVersus to pe³nostackowa aplikacja webowa inspirowana GeoGuessr, ale zaprojektowana dla fanów anime.
-Gracz ogl¹da scenê/lokacjê inspirowan¹ klimatem anime i wybiera poprawny tytu³ spoœród 4 odpowiedzi.
+![React 19](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178C6?logo=typescript&logoColor=white)
+![Vite 8.0.8](https://img.shields.io/badge/Vite-8.0.8-646CFF?logo=vite&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white)
+![Express](https://img.shields.io/badge/Express-4-000000?logo=express&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?logo=prisma&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-4169E1?logo=postgresql&logoColor=white)
 
-Projekt jest gotowy jako portfolio project (junior+/mid): ma modularny backend, pe³ny flow auth + game loop + leaderboard + historiê gracza, seed danych i dopracowany, responsywny UI.
+OtakuVersus is a fullstack anime guessing game inspired by GeoGuessr.  
+Players analyze anime-inspired scene frames and type the anime title.
 
-## G³ówne za³o¿enia produktu
+The project is structured as a complete, production-style app with:
+- production-style folder structure,
+- auth + game loop + rankings,
+- singleplayer and multiplayer modes,
+- ELO system for multiplayer,
+- reusable UI components and responsive manga-styled interface.
 
-- 5-rundowe sesje gry
-- punkty za poprawne odpowiedzi + bonus czasowy
-- globalny leaderboard
-- historia sesji i statystyki gracza
-- JWT auth i chronione trasy
-- legalne placeholdery assetów (³atwa podmiana na w³asne/licencjonowane)
+## Core Features
 
-## Stack technologiczny
+- JWT authentication (register, login, current user)
+- Guest play support (no account required)
+- Singleplayer sessions (score-based)
+- Multiplayer matchmaking with shared rounds
+- Pre-match countdown and synchronized round timer
+- Result comparison vs opponent
+- ELO ranking for multiplayer accounts
+- Separate leaderboards:
+  - Singleplayer score leaderboard
+  - Multiplayer ELO leaderboard
+- User match history with mode filtering
+- Anime titles and scenes seeded into PostgreSQL via Prisma
+
+## Tech Stack
 
 ### Frontend
-- React
+- React 19
 - TypeScript
 - Vite
 - Tailwind CSS
@@ -28,83 +47,70 @@ Projekt jest gotowy jako portfolio project (junior+/mid): ma modularny backend, 
 - Node.js
 - Express
 - TypeScript
-- Prisma
+- Prisma ORM
 - PostgreSQL
 
-### Dodatkowo
+### Additional
 - JWT auth
-- Warstwa abstrakcji storage (`noop` / Cloudinary / Supabase Storage)
-- Gotowoœæ do deploymentu:
-  - Frontend: Vercel
-  - Backend: Railway / Render
+- Storage abstraction layer (`noop` / Cloudinary / Supabase Storage)
+- Frontend deploy-ready for Vercel
+- Backend deploy-ready for Railway/Render
 
-## Architektura (skrót)
-
-- Monorepo `client` + `server` dla czytelnego developmentu fullstack.
-- Backend podzielony na modu³y domenowe:
-  - `auth`
-  - `users`
-  - `game`
-  - `leaderboard`
-  - `anime-scenes`
-- Prisma jako pojedyncze Ÿród³o prawdy schematu bazy.
-- Frontend z separacj¹ `api`, `features`, `components`, `pages`, `layouts`, `routes`.
-- TanStack Query do fetchingu i cache, Auth Context do prostego zarz¹dzania sesj¹ JWT.
-
-## Struktura folderów
+## Project Structure
 
 ```text
 OtakuVersus/
-+¦ client/
--  +¦ src/
--  -  +¦ api/
--  -  +¦ app/
--  -  +¦ components/
--  -  -  +¦ game/
--  -  -  L¦ ui/
--  -  +¦ features/
--  -  -  +¦ auth/
--  -  -  +¦ game/
--  -  -  +¦ history/
--  -  -  L¦ leaderboard/
--  -  +¦ layouts/
--  -  +¦ pages/
--  -  +¦ routes/
--  -  +¦ styles/
--  -  +¦ types/
--  -  L¦ utils/
--  +¦ .env.example
--  +¦ package.json
--  L¦ tailwind.config.js
-+¦ server/
--  +¦ prisma/
--  -  +¦ migrations/
--  -  -  L¦ 20260411120000_init/migration.sql
--  -  +¦ schema.prisma
--  -  L¦ seed.ts
--  +¦ src/
--  -  +¦ app/
--  -  +¦ config/
--  -  +¦ lib/
--  -  +¦ middleware/
--  -  +¦ modules/
--  -  -  +¦ anime-scenes/
--  -  -  +¦ auth/
--  -  -  +¦ game/
--  -  -  +¦ leaderboard/
--  -  -  L¦ users/
--  -  +¦ storage/
--  -  +¦ types/
--  -  L¦ utils/
--  +¦ .env.example
--  +¦ package.json
--  L¦ tsconfig.json
-+¦ package.json
-L¦ README.md
+  client/
+    src/
+      api/
+      app/
+      components/
+        game/
+        ui/
+      features/
+        auth/
+        game/
+        history/
+        leaderboard/
+      layouts/
+      pages/
+      routes/
+      styles/
+      types/
+      utils/
+    public/
+    .env.example
+    package.json
+
+  server/
+    prisma/
+      migrations/
+      schema.prisma
+      seed.ts
+    src/
+      app/
+      config/
+      lib/
+      middleware/
+      modules/
+        auth/
+        users/
+        game/
+        leaderboard/
+        anime-scenes/
+      storage/
+      types/
+      utils/
+    .env.example
+    package.json
+
+  package.json
+  README.md
 ```
 
-## Modele danych (Prisma)
+## Data Model (Prisma)
 
+Main models:
 - `User`
 - `GameSession`
 - `Round`
@@ -112,74 +118,95 @@ L¦ README.md
 - `AnimeTitle`
 - `Scene`
 
-Dodatkowo enumy:
+Key enums:
 - `GameSessionStatus` (`ACTIVE`, `FINISHED`)
 - `DifficultyLevel` (`EASY`, `MEDIUM`, `HARD`)
-- `SceneCategory` (`CITYSCAPE`, `NATURE`, `SCHOOL`, `SHRINE`, `NIGHTLIFE`, `FANTASY`)
+- `GameMode` (`SINGLEPLAYER`, `MULTIPLAYER`)
 
-## API endpointy
+## API Endpoints
+
+Base path: `/api`
 
 ### Health
-- `GET /api/health`
+- `GET /health`
 
 ### Auth
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `GET /api/auth/me`
+- `POST /auth/register`
+- `POST /auth/login`
+- `GET /auth/me`
 
 ### Game
-- `POST /api/game/start`
-- `GET /api/game/session/:id`
-- `POST /api/game/session/:id/answer`
-- `POST /api/game/session/:id/finish`
+- `POST /game/start`
+- `GET /game/session/:id`
+- `POST /game/session/:id/answer`
+- `POST /game/session/:id/finish`
 
-### Leaderboard
-- `GET /api/leaderboard`
+### Multiplayer
+- `POST /game/multiplayer/queue/join`
+- `GET /game/multiplayer/queue/:ticketId`
+- `GET /game/multiplayer/session/:id/status`
+- `GET /game/multiplayer/session/:id/result`
+- `GET /game/multiplayer/session/:id/round/:roundOrder/result`
 
-### Users
-- `GET /api/users/me/history`
+### Leaderboards
+- `GET /leaderboard` (singleplayer score ranking)
+- `GET /leaderboard/elo` (multiplayer ELO ranking)
 
-### Scenes/Data
-- `GET /api/scenes/categories`
-- `GET /api/scenes/difficulties`
+### User
+- `GET /users/me/history`
 
-## Uruchomienie lokalne
+### Scene/Metadata
+- `GET /scenes/categories`
+- `GET /scenes/difficulties`
+- `GET /scenes/titles`
 
-## 1. Wymagania
+## Local Setup
+
+## 1. Requirements
 - Node.js 20+
 - PostgreSQL 14+
 
-## 2. Instalacja zale¿noœci
+## 2. Install dependencies
 
 ```bash
 npm install
 ```
 
-## 3. Konfiguracja ENV
+## 3. Configure environment variables
 
-Skopiuj pliki i uzupe³nij wartoœci:
-
+Copy and fill:
 - `server/.env.example` -> `server/.env`
 - `client/.env.example` -> `client/.env`
 
-Najwa¿niejsze zmienne:
+Important variables:
 
 - `server/.env`
+  - `PORT`
   - `DATABASE_URL`
+  - `DIRECT_URL` (recommended for Prisma migrations when using poolers)
   - `JWT_SECRET`
+  - `JWT_EXPIRES_IN`
   - `CLIENT_URL`
-  - `STORAGE_PROVIDER` (`noop` lub `cloudinary` lub `supabase`)
-- `client/.env`
-  - `VITE_API_URL` (domyœlnie `http://localhost:4000/api`)
+  - `STORAGE_PROVIDER`
 
-## 4. Migracja + seed
+- `client/.env`
+  - `VITE_API_URL` (default: `http://localhost:4000/api`)
+
+## 4. Prisma setup
 
 ```bash
+npm run prisma:generate --workspace server
 npm run prisma:migrate --workspace server
 npm run prisma:seed --workspace server
 ```
 
-## 5. Start aplikacji
+If you're using an existing remote DB and committed migrations:
+
+```bash
+npm run prisma:deploy --workspace server
+```
+
+## 5. Run app
 
 ```bash
 npm run dev
@@ -188,23 +215,7 @@ npm run dev
 - Frontend: `http://localhost:5173`
 - Backend: `http://localhost:4000`
 
-## Konto demo (po seed)
-
-- Email: `demo@otakuversus.dev`
-- Password: `DemoPass123!`
-- Nickname: `NeonOtaku`
-
-## Seed danych
-
-Seed tworzy:
-- katalog anime tytu³ów
-- zestaw scen (ró¿ne poziomy trudnoœci i kategorie)
-- u¿ytkowników demo
-- przyk³adowe ukoñczone sesje do leaderboardu
-
-Assety scen to placeholdery (bez ryzyka naruszeñ praw autorskich), gotowe do póŸniejszej podmiany.
-
-## Komendy developerskie
+## Useful Scripts
 
 ### Root
 ```bash
@@ -220,6 +231,7 @@ npm run build --workspace server
 npm run lint --workspace server
 npm run prisma:generate --workspace server
 npm run prisma:migrate --workspace server
+npm run prisma:deploy --workspace server
 npm run prisma:seed --workspace server
 ```
 
@@ -228,38 +240,35 @@ npm run prisma:seed --workspace server
 npm run dev --workspace client
 npm run build --workspace client
 npm run lint --workspace client
+npm run preview --workspace client
 ```
 
-## Deployment notes
+## Deployment Notes
 
 ### Frontend (Vercel)
-- Root: `client`
+- Root directory: `client`
 - Build command: `npm run build`
-- Output: `dist`
-- Env: `VITE_API_URL` wskazuj¹ce na backend
+- Output directory: `dist`
+- Env: `VITE_API_URL`
 
 ### Backend (Railway / Render)
-- Root: `server`
-- Build: `npm run build`
-- Start: `npm run start`
-- Env: `DATABASE_URL`, `JWT_SECRET`, `CLIENT_URL`, opcjonalnie storage vars
-- DB: Supabase Postgres lub inny PostgreSQL
+- Root directory: `server`
+- Build command: `npm run build`
+- Start command: `npm run start`
+- Env: `DATABASE_URL`, `JWT_SECRET`, `CLIENT_URL`, optional storage vars
 
-## Krótkie uzasadnienie decyzji architektonicznych
+## Architecture Notes
 
-- Express + modu³y domenowe: prosty onboarding i czytelny podzia³ odpowiedzialnoœci.
-- Prisma + PostgreSQL: stabilny model relacyjny dla sesji/rund/odpowiedzi.
-- TanStack Query: czysty, przewidywalny data-fetching i cache frontendu.
-- Auth Context + token helper: minimalna z³o¿onoœæ, ³atwe utrzymanie.
-- Storage abstraction: przygotowanie projektu pod przysz³e uploady bez przepisywania core backendu.
+- Domain-based Express modules keep backend features isolated and maintainable.
+- Prisma schema is the single source of truth for data shape and relations.
+- TanStack Query handles async state and cache on the frontend.
+- Auth context keeps JWT flow simple and explicit.
+- Multiplayer and ELO are implemented server-side to keep scoring authoritative.
 
-## Dalszy rozwój (roadmap)
+## Roadmap
 
-- tryb ranked seasons i MMR
-- codzienne challenge i streaki
-- multiplayer live duels
-- panel admina do zarz¹dzania scenami/datasetem
-- filtry sesji po kategorii/trudnoœci
-- achievements, badge collection i profile publiczne
-- odtwarzanie rund po zakoñczeniu gry (replay mode)
-- testy automatyczne (unit/integration/e2e)
+- WebSocket-based real-time multiplayer updates
+- Ranked seasons and decay
+- Admin panel for scene management
+- Replay mode and per-round analytics
+- More robust test coverage (unit/integration/e2e)
