@@ -1,4 +1,4 @@
-import { GameSessionStatus } from '@prisma/client';
+import { GameMode, GameSessionStatus } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { prisma } from '../../lib/prisma';
 import { ApiError } from '../../utils/api-error';
@@ -29,6 +29,8 @@ type MatchPlayerState = {
   userId: string;
   participantKey: string;
   nickname: string;
+  isGuest: boolean;
+  elo: number | null;
   finishedSummary?: {
     score: number;
     correctAnswers: number;
@@ -48,6 +50,9 @@ type MultiplayerMatchState = {
       shortened: boolean;
     }
   >;
+  eloResolved: boolean;
+  eloDeltaBySession: Record<string, number>;
+  eloResolutionPromise?: Promise<Record<string, number>>;
 };
 
 type AnimeMeta = {
@@ -60,6 +65,8 @@ const GUEST_PASSWORD_HASH = '__guest_account__';
 const MULTIPLAYER_ROUND_TIME_MS = 30_000;
 const MULTIPLAYER_START_COUNTDOWN_MS = 3_000;
 const MIN_MULTIPLAYER_REMAINING_MS = 1_000;
+const ELO_DEFAULT = 1000;
+const ELO_K_FACTOR = 32;
 const animeMetaCache = new Map<string, AnimeMeta | null>();
 const multiplayerMatches = new Map<string, MultiplayerMatchState>();
 const sessionToMatchId = new Map<string, string>();
@@ -68,12 +75,14 @@ const multiplayerQueue: Array<{
   userId: string;
   participantKey: string;
   displayName: string;
+  isGuest: boolean;
+  elo: number | null;
   roundsCount: number;
 }> = [];
 const queueStatus = new Map<
   string,
   | { status: 'waiting' }
-  | { status: 'matched'; sessionId: string; opponentNickname: string }
+  | { status: 'matched'; sessionId: string; opponentNickname: string; opponentElo: number | null }
 >();
 
 function sanitizeGuestId(value: string) {
@@ -276,9 +285,39 @@ function registerMultiplayerFinish(
   player.finishedSummary = summary;
 }
 
-async function resolveSessionUserId(userId?: string, guestId?: string) {
+type ResolvedSessionPlayer = {
+  id: string;
+  nickname: string;
+  isGuest: boolean;
+  elo: number | null;
+};
+
+function computeEloDelta(selfElo: number, opponentElo: number, actualScore: number) {
+  const expectedScore = 1 / (1 + 10 ** ((opponentElo - selfElo) / 400));
+  return Math.round(ELO_K_FACTOR * (actualScore - expectedScore));
+}
+
+function ensureDefaultElo(elo: number | null) {
+  return typeof elo === 'number' ? elo : ELO_DEFAULT;
+}
+
+async function resolveSessionPlayer(userId?: string, guestId?: string): Promise<ResolvedSessionPlayer> {
   if (userId) {
-    return userId;
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        nickname: true,
+        isGuest: true,
+        elo: true
+      }
+    });
+
+    if (!user) {
+      throw new ApiError(404, 'User not found');
+    }
+
+    return user;
   }
 
   const guestKey = sanitizeGuestId(guestId ?? '');
@@ -290,28 +329,62 @@ async function resolveSessionUserId(userId?: string, guestId?: string) {
       email: guestEmail
     },
     select: {
-      id: true
+      id: true,
+      nickname: true,
+      isGuest: true,
+      elo: true
     }
   });
 
   if (existingGuest) {
-    return existingGuest.id;
+    if (existingGuest.isGuest && existingGuest.elo === null) {
+      return existingGuest;
+    }
+
+    return prisma.user.update({
+      where: {
+        id: existingGuest.id
+      },
+      data: {
+        isGuest: true,
+        elo: null
+      },
+      select: {
+        id: true,
+        nickname: true,
+        isGuest: true,
+        elo: true
+      }
+    });
   }
 
   const nicknameCandidate = `${GUEST_NICKNAME}-${fallbackKey.slice(0, 6)}`;
 
-  const guest = await prisma.user.create({
-    data: {
-      email: guestEmail,
-      nickname: nicknameCandidate,
-      passwordHash: GUEST_PASSWORD_HASH
-    },
-    select: {
-      id: true
+  const existingNicknameCount = await prisma.user.count({
+    where: {
+      nickname: {
+        startsWith: nicknameCandidate
+      }
     }
   });
 
-  return guest.id;
+  const guest = await prisma.user.create({
+    data: {
+      email: guestEmail,
+      nickname: existingNicknameCount > 0 ? `${nicknameCandidate}-${existingNicknameCount + 1}` : nicknameCandidate,
+      passwordHash: GUEST_PASSWORD_HASH,
+      isGuest: true,
+      elo: null
+    },
+    select: {
+      id: true,
+      nickname: true,
+      isGuest: true,
+      elo: true
+    }
+  });
+
+  return guest;
 }
 
 function shuffle<T>(items: T[]): T[] {
@@ -455,12 +528,14 @@ async function buildUniqueSceneSelection(roundsCount: number) {
 
 async function createSessionFromSelectedScenes(
   userId: string,
-  selectedScenes: Array<{ id: string; animeTitle: { name: string } }>
+  selectedScenes: Array<{ id: string; animeTitle: { name: string } }>,
+  mode: GameMode
 ) {
   return prisma.$transaction(async (tx) => {
     const session = await tx.gameSession.create({
       data: {
         userId,
+        mode,
         totalRounds: selectedScenes.length,
         currentRoundIndex: 1,
         status: GameSessionStatus.ACTIVE
@@ -483,13 +558,104 @@ async function createSessionFromSelectedScenes(
   });
 }
 
+async function resolveMultiplayerElo(match: MultiplayerMatchState) {
+  if (match.eloResolved) {
+    return match.eloDeltaBySession;
+  }
+
+  if (match.eloResolutionPromise) {
+    return match.eloResolutionPromise;
+  }
+
+  match.eloResolutionPromise = (async () => {
+    try {
+      const playerA = match.players[0];
+      const playerB = match.players[1];
+
+      if (!playerA.finishedSummary || !playerB.finishedSummary) {
+        return match.eloDeltaBySession;
+      }
+
+      const scoreA =
+        playerA.finishedSummary.score > playerB.finishedSummary.score
+          ? 1
+          : playerA.finishedSummary.score < playerB.finishedSummary.score
+            ? 0
+            : 0.5;
+      const scoreB = 1 - scoreA;
+
+      const canApplyRatedMatch =
+        !playerA.isGuest &&
+        !playerB.isGuest &&
+        typeof playerA.elo === 'number' &&
+        typeof playerB.elo === 'number';
+
+      let deltaA = 0;
+      let deltaB = 0;
+
+      if (canApplyRatedMatch) {
+        const safeEloA = ensureDefaultElo(playerA.elo);
+        const safeEloB = ensureDefaultElo(playerB.elo);
+        deltaA = computeEloDelta(safeEloA, safeEloB, scoreA);
+        deltaB = computeEloDelta(safeEloB, safeEloA, scoreB);
+      }
+
+      await prisma.$transaction(async (tx) => {
+        if (canApplyRatedMatch) {
+          await tx.user.update({
+            where: { id: playerA.userId },
+            data: {
+              elo: {
+                increment: deltaA
+              }
+            }
+          });
+          await tx.user.update({
+            where: { id: playerB.userId },
+            data: {
+              elo: {
+                increment: deltaB
+              }
+            }
+          });
+        }
+
+        await tx.gameSession.update({
+          where: { id: playerA.sessionId },
+          data: {
+            eloDelta: deltaA
+          }
+        });
+        await tx.gameSession.update({
+          where: { id: playerB.sessionId },
+          data: {
+            eloDelta: deltaB
+          }
+        });
+      });
+
+      playerA.elo = canApplyRatedMatch ? ensureDefaultElo(playerA.elo) + deltaA : playerA.elo;
+      playerB.elo = canApplyRatedMatch ? ensureDefaultElo(playerB.elo) + deltaB : playerB.elo;
+      match.eloDeltaBySession[playerA.sessionId] = deltaA;
+      match.eloDeltaBySession[playerB.sessionId] = deltaB;
+      match.eloResolved = true;
+
+      return match.eloDeltaBySession;
+    } finally {
+      match.eloResolutionPromise = undefined;
+    }
+  })();
+
+  return match.eloResolutionPromise;
+}
+
 export async function startGameSession(input: StartSessionInput) {
-  const userId = await resolveSessionUserId(input.userId, input.guestId);
+  const player = await resolveSessionPlayer(input.userId, input.guestId);
   const roundsCount = input.roundsCount ?? 5;
   const selected = await buildUniqueSceneSelection(roundsCount);
-  const createdSession = await createSessionFromSelectedScenes(userId, selected);
+  const createdSession = await createSessionFromSelectedScenes(player.id, selected, GameMode.SINGLEPLAYER);
 
-  return getGameSessionDetails(userId, createdSession.id);
+  return getGameSessionDetails(player.id, createdSession.id);
 }
 
 export async function getGameSessionDetails(
@@ -497,13 +663,19 @@ export async function getGameSessionDetails(
   sessionId: string,
   guestId?: string
 ) {
-  const sessionUserId = await resolveSessionUserId(userId, guestId);
+  const sessionPlayer = await resolveSessionPlayer(userId, guestId);
   let session = await prisma.gameSession.findFirst({
     where: {
       id: sessionId,
-      userId: sessionUserId
+      userId: sessionPlayer.id
     },
     include: {
+      user: {
+        select: {
+          elo: true,
+          isGuest: true
+        }
+      },
       rounds: {
         orderBy: {
           order: 'asc'
@@ -542,9 +714,15 @@ export async function getGameSessionDetails(
       session = await prisma.gameSession.findFirst({
         where: {
           id: sessionId,
-          userId: sessionUserId
+          userId: sessionPlayer.id
         },
         include: {
+          user: {
+            select: {
+              elo: true,
+              isGuest: true
+            }
+          },
           rounds: {
             orderBy: {
               order: 'asc'
@@ -593,7 +771,10 @@ export async function getGameSessionDetails(
       finishedAt: session.finishedAt?.toISOString() ?? null,
       canFinish: session.currentRoundIndex > session.totalRounds,
       multiplayer: Boolean(match),
-      opponentNickname: opponent?.nickname ?? null
+      opponentNickname: opponent?.nickname ?? null,
+      opponentElo: opponent?.elo ?? null,
+      elo: session.user.isGuest ? null : session.user.elo ?? ELO_DEFAULT,
+      mode: session.mode
     },
     answeredRounds,
     currentRound: currentRound ? await buildPublicRound(currentRound) : null
@@ -601,7 +782,7 @@ export async function getGameSessionDetails(
 }
 
 export async function answerRound(input: AnswerInput) {
-  const userId = await resolveSessionUserId(input.userId, input.guestId);
+  const player = await resolveSessionPlayer(input.userId, input.guestId);
   const selectedAnswer = input.selectedAnswer.trim();
 
   if (!selectedAnswer) {
@@ -612,7 +793,7 @@ export async function answerRound(input: AnswerInput) {
     const session = await tx.gameSession.findFirst({
       where: {
         id: input.sessionId,
-        userId
+        userId: player.id
       }
     });
 
@@ -659,7 +840,7 @@ export async function answerRound(input: AnswerInput) {
       data: {
         sessionId: session.id,
         roundId: round.id,
-        userId,
+        userId: player.id,
         selectedOption: selectedAnswer,
         isCorrect,
         responseTimeMs: input.responseTimeMs,
@@ -738,7 +919,9 @@ export async function answerRound(input: AnswerInput) {
       totalRounds: response.session.totalRounds,
       canFinish: response.session.currentRoundIndex > response.session.totalRounds,
       multiplayer: Boolean(match),
-      opponentNickname: opponent?.nickname ?? null
+      opponentNickname: opponent?.nickname ?? null,
+      opponentElo: opponent?.elo ?? null,
+      mode: response.session.mode
     },
     nextRound: response.nextRound
       ? await buildPublicRound({
@@ -751,11 +934,11 @@ export async function answerRound(input: AnswerInput) {
 }
 
 export async function finishGameSession(userId: string | undefined, sessionId: string, guestId?: string) {
-  const sessionUserId = await resolveSessionUserId(userId, guestId);
+  const player = await resolveSessionPlayer(userId, guestId);
   const session = await prisma.gameSession.findFirst({
     where: {
       id: sessionId,
-      userId: sessionUserId
+      userId: player.id
     },
     include: {
       rounds: {
@@ -837,9 +1020,9 @@ export async function finishGameSession(userId: string | undefined, sessionId: s
 
 export async function joinMultiplayerQueue(input: MatchmakingJoinInput) {
   const roundsCount = input.roundsCount ?? 5;
-  const resolvedUserId = await resolveSessionUserId(input.userId, input.guestId);
+  const player = await resolveSessionPlayer(input.userId, input.guestId);
   const participantKey = buildParticipantKey(input.userId, input.guestId);
-  const displayName = input.displayName?.trim() || (input.userId ? 'Player' : buildGuestPlayerName());
+  const displayName = input.displayName?.trim() || (player.isGuest ? buildGuestPlayerName() : player.nickname);
 
   // Idempotent re-join: if this user is already in an active match, return that match again.
   for (const match of multiplayerMatches.values()) {
@@ -851,7 +1034,8 @@ export async function joinMultiplayerQueue(input: MatchmakingJoinInput) {
         status: 'matched' as const,
         ticketId: `match-${match.id}`,
         sessionId: self.sessionId,
-        opponentNickname: opponent.nickname
+        opponentNickname: opponent.nickname,
+        opponentElo: opponent.elo
       };
     }
   }
@@ -864,7 +1048,8 @@ export async function joinMultiplayerQueue(input: MatchmakingJoinInput) {
         status: 'matched' as const,
         ticketId: existingTicket.ticketId,
         sessionId: existingStatus.sessionId,
-        opponentNickname: existingStatus.opponentNickname
+        opponentNickname: existingStatus.opponentNickname,
+        opponentElo: existingStatus.opponentElo
       };
     }
     if (existingStatus?.status === 'waiting') {
@@ -887,9 +1072,11 @@ export async function joinMultiplayerQueue(input: MatchmakingJoinInput) {
   if (opponentIndex === -1) {
     multiplayerQueue.push({
       ticketId,
-      userId: resolvedUserId,
+      userId: player.id,
       participantKey,
       displayName,
+      isGuest: player.isGuest,
+      elo: player.isGuest ? null : player.elo ?? ELO_DEFAULT,
       roundsCount
     });
 
@@ -905,12 +1092,12 @@ export async function joinMultiplayerQueue(input: MatchmakingJoinInput) {
   const sharedScenes = await buildUniqueSceneSelection(sharedRoundsCount);
 
   const [playerSessionRecord, opponentSessionRecord] = await Promise.all([
-    createSessionFromSelectedScenes(resolvedUserId, sharedScenes),
-    createSessionFromSelectedScenes(opponent.userId, sharedScenes)
+    createSessionFromSelectedScenes(player.id, sharedScenes, GameMode.MULTIPLAYER),
+    createSessionFromSelectedScenes(opponent.userId, sharedScenes, GameMode.MULTIPLAYER)
   ]);
 
   const [playerSession, opponentSession] = await Promise.all([
-    getGameSessionDetails(resolvedUserId, playerSessionRecord.id),
+    getGameSessionDetails(player.id, playerSessionRecord.id),
     getGameSessionDetails(opponent.userId, opponentSessionRecord.id)
   ]);
 
@@ -920,15 +1107,19 @@ export async function joinMultiplayerQueue(input: MatchmakingJoinInput) {
     players: [
       {
         sessionId: playerSession.session.id,
-        userId: resolvedUserId,
+        userId: player.id,
         participantKey,
-        nickname: displayName
+        nickname: displayName,
+        isGuest: player.isGuest,
+        elo: player.isGuest ? null : player.elo ?? ELO_DEFAULT
       },
       {
         sessionId: opponentSession.session.id,
         userId: opponent.userId,
         participantKey: opponent.participantKey,
-        nickname: opponent.displayName
+        nickname: opponent.displayName,
+        isGuest: opponent.isGuest,
+        elo: opponent.elo
       }
     ],
     lockedRoundsBySession: {
@@ -941,7 +1132,9 @@ export async function joinMultiplayerQueue(input: MatchmakingJoinInput) {
         durationMs: MULTIPLAYER_ROUND_TIME_MS,
         shortened: false
       }
-    }
+    },
+    eloResolved: false,
+    eloDeltaBySession: {}
   };
   multiplayerMatches.set(matchId, matchState);
   sessionToMatchId.set(playerSession.session.id, matchId);
@@ -950,20 +1143,23 @@ export async function joinMultiplayerQueue(input: MatchmakingJoinInput) {
   queueStatus.set(ticketId, {
     status: 'matched',
     sessionId: playerSession.session.id,
-    opponentNickname: opponent.displayName
+    opponentNickname: opponent.displayName,
+    opponentElo: opponent.elo
   });
 
   queueStatus.set(opponent.ticketId, {
     status: 'matched',
     sessionId: opponentSession.session.id,
-    opponentNickname: displayName
+    opponentNickname: displayName,
+    opponentElo: player.isGuest ? null : player.elo ?? ELO_DEFAULT
   });
 
   return {
     status: 'matched' as const,
     ticketId,
     sessionId: playerSession.session.id,
-    opponentNickname: opponent.displayName
+    opponentNickname: opponent.displayName,
+    opponentElo: opponent.elo
   };
 }
 
@@ -985,7 +1181,8 @@ export async function getMultiplayerQueueStatus(ticketId: string) {
     status: 'matched' as const,
     ticketId,
     sessionId: status.sessionId,
-    opponentNickname: status.opponentNickname
+    opponentNickname: status.opponentNickname,
+    opponentElo: status.opponentElo
   };
 }
 
@@ -995,6 +1192,8 @@ export async function getMultiplayerSessionStatus(sessionId: string, roundOrder?
     return {
       multiplayer: false as const,
       opponentNickname: null,
+      opponentElo: null,
+      yourElo: null,
       opponentLockedCurrentRound: false,
       roundStartedAtMs: null,
       roundDurationMs: null,
@@ -1022,6 +1221,7 @@ export async function getMultiplayerSessionStatus(sessionId: string, roundOrder?
   }
 
   const opponent = getOpponentState(match, sessionId);
+  const self = match.players.find((player) => player.sessionId === sessionId);
   const opponentLocks = match.lockedRoundsBySession[opponent.sessionId] ?? new Set<number>();
   const upToDateTimer =
     targetRoundOrder <= session.totalRounds ? ensureMatchRoundTimer(match, targetRoundOrder) : null;
@@ -1029,6 +1229,8 @@ export async function getMultiplayerSessionStatus(sessionId: string, roundOrder?
   return {
     multiplayer: true as const,
     opponentNickname: opponent.nickname,
+    opponentElo: opponent.elo,
+    yourElo: self?.elo ?? null,
     opponentLockedCurrentRound: targetRoundOrder ? opponentLocks.has(targetRoundOrder) : false,
     roundStartedAtMs: upToDateTimer?.startedAtMs ?? null,
     roundDurationMs: upToDateTimer?.durationMs ?? null,
@@ -1055,9 +1257,14 @@ export async function getMultiplayerResultComparison(sessionId: string) {
     return {
       multiplayer: true as const,
       ready: false as const,
-      opponentNickname: opponent.nickname
+      opponentNickname: opponent.nickname,
+      opponentElo: opponent.elo
     };
   }
+
+  const eloDeltaBySession = await resolveMultiplayerElo(match);
+  const selfEloDelta = eloDeltaBySession[self.sessionId] ?? 0;
+  const opponentEloDelta = eloDeltaBySession[opponent.sessionId] ?? 0;
 
   const selfAccuracy = Number(
     ((self.finishedSummary.correctAnswers / self.finishedSummary.totalRounds) * 100).toFixed(1)
@@ -1078,12 +1285,16 @@ export async function getMultiplayerResultComparison(sessionId: string) {
     result,
     you: {
       score: self.finishedSummary.score,
-      accuracy: selfAccuracy
+      accuracy: selfAccuracy,
+      elo: self.elo,
+      eloDelta: selfEloDelta
     },
     opponent: {
       nickname: opponent.nickname,
       score: opponent.finishedSummary.score,
-      accuracy: opponentAccuracy
+      accuracy: opponentAccuracy,
+      elo: opponent.elo,
+      eloDelta: opponentEloDelta
     }
   };
 }
@@ -1160,6 +1371,8 @@ function buildFinishedSessionSummary(session: {
   score: number;
   totalRounds: number;
   correctAnswers: number;
+  mode: GameMode;
+  eloDelta: number;
   startedAt: Date;
   finishedAt: Date | null;
   rounds: Array<{
@@ -1184,6 +1397,8 @@ function buildFinishedSessionSummary(session: {
       score: session.score,
       totalRounds: session.totalRounds,
       correctAnswers: session.correctAnswers,
+      mode: session.mode,
+      eloDelta: session.eloDelta,
       accuracy: Number(((session.correctAnswers / session.totalRounds) * 100).toFixed(1)),
       startedAt: session.startedAt.toISOString(),
       finishedAt: session.finishedAt?.toISOString() ?? null

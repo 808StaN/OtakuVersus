@@ -19,26 +19,37 @@ enum DifficultyLevel {
   HARD
 }
 
+enum GameMode {
+  SINGLEPLAYER
+  MULTIPLAYER
+}
+
 model User {
   id           String        @id @default(cuid())
   email        String        @unique
   nickname     String        @unique
   passwordHash String
+  isGuest      Boolean       @default(false)
+  elo          Int?          @default(1000)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
   gameSessions GameSession[]
   guesses      Guess[]
+
+  @@index([isGuest, elo])
 }
 
 model GameSession {
   id                String            @id @default(cuid())
   userId            String
   status            GameSessionStatus @default(ACTIVE)
+  mode              GameMode          @default(SINGLEPLAYER)
   totalRounds       Int
   currentRoundIndex Int               @default(1)
   score             Int               @default(0)
   correctAnswers    Int               @default(0)
+  eloDelta          Int               @default(0)
   startedAt         DateTime          @default(now())
   finishedAt        DateTime?
   createdAt         DateTime          @default(now())
@@ -50,6 +61,7 @@ model GameSession {
 
   @@index([userId, status])
   @@index([status, score])
+  @@index([mode, status, score])
 }
 
 model Round {

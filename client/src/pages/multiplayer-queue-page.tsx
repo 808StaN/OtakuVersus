@@ -103,7 +103,8 @@ export function MultiplayerQueuePage() {
       <div className="mx-auto h-5 w-5 animate-spin border-[4px] border-black border-t-[#bc002d]" />
       {queueState?.status === 'matched' ? (
         <p className="font-black text-[#bc002d]">
-          Match found with {queueState.opponentNickname ?? 'Opponent'}!
+          Match found with {queueState.opponentNickname ?? 'Opponent'}
+          {typeof queueState.opponentElo === 'number' ? ` (ELO ${queueState.opponentElo})` : ''}!
         </p>
       ) : null}
       <div className="flex justify-center">

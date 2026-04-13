@@ -2,6 +2,7 @@ export type AuthUser = {
   id: string;
   email: string;
   nickname: string;
+  elo: number;
   createdAt: string;
 };
 
@@ -26,6 +27,9 @@ export type SessionSnapshot = {
   canFinish: boolean;
   multiplayer: boolean;
   opponentNickname: string | null;
+  opponentElo: number | null;
+  elo: number | null;
+  mode: 'SINGLEPLAYER' | 'MULTIPLAYER';
 };
 
 export type PublicRound = {
@@ -62,6 +66,8 @@ export type AnswerResultResponse = {
     canFinish: boolean;
     multiplayer: boolean;
     opponentNickname: string | null;
+    opponentElo: number | null;
+    mode: 'SINGLEPLAYER' | 'MULTIPLAYER';
   };
   nextRound: PublicRound | null;
 };
@@ -72,6 +78,8 @@ export type FinishedSessionResponse = {
     score: number;
     totalRounds: number;
     correctAnswers: number;
+    mode: 'SINGLEPLAYER' | 'MULTIPLAYER';
+    eloDelta: number;
     accuracy: number;
     startedAt: string;
     finishedAt: string | null;
@@ -97,6 +105,15 @@ export type LeaderboardRow = {
   playedAt: string | null;
 };
 
+export type EloLeaderboardRow = {
+  position: number;
+  userId: string;
+  nickname: string;
+  elo: number;
+  matchesPlayed: number;
+  playedAt: string | null;
+};
+
 export type UserHistoryResponse = {
   stats: {
     totalSessions: number;
@@ -119,11 +136,14 @@ export type MultiplayerQueueResponse = {
   ticketId: string;
   sessionId?: string;
   opponentNickname?: string;
+  opponentElo?: number | null;
 };
 
 export type MultiplayerSessionStatusResponse = {
   multiplayer: boolean;
   opponentNickname: string | null;
+  opponentElo: number | null;
+  yourElo: number | null;
   opponentLockedCurrentRound: boolean;
   roundStartedAtMs: number | null;
   roundDurationMs: number | null;
@@ -132,13 +152,13 @@ export type MultiplayerSessionStatusResponse = {
 
 export type MultiplayerResultResponse =
   | { multiplayer: false }
-  | { multiplayer: true; ready: false; opponentNickname: string }
+  | { multiplayer: true; ready: false; opponentNickname: string; opponentElo: number | null }
   | {
       multiplayer: true;
       ready: true;
       result: 'WIN' | 'LOSE' | 'DRAW';
-      you: { score: number; accuracy: number };
-      opponent: { nickname: string; score: number; accuracy: number };
+      you: { score: number; accuracy: number; elo: number | null; eloDelta: number };
+      opponent: { nickname: string; score: number; accuracy: number; elo: number | null; eloDelta: number };
     };
 
 export type MultiplayerRoundResultResponse =

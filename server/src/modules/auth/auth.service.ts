@@ -10,6 +10,7 @@ export type AuthResponse = {
     id: string;
     email: string;
     nickname: string;
+    elo: number;
     createdAt: string;
   };
 };
@@ -18,6 +19,7 @@ function toAuthResponse(user: {
   id: string;
   email: string;
   nickname: string;
+  elo: number | null;
   createdAt: Date;
 }): AuthResponse {
   const token = signAccessToken({
@@ -32,6 +34,7 @@ function toAuthResponse(user: {
       id: user.id,
       email: user.email,
       nickname: user.nickname,
+      elo: user.elo ?? 1000,
       createdAt: user.createdAt.toISOString()
     }
   };
@@ -55,6 +58,7 @@ export async function registerUser(data: {
         id: true,
         email: true,
         nickname: true,
+        elo: true,
         createdAt: true
       }
     });
@@ -99,6 +103,7 @@ export async function getCurrentUser(userId: string) {
       id: true,
       email: true,
       nickname: true,
+      elo: true,
       createdAt: true
     }
   });
@@ -109,6 +114,7 @@ export async function getCurrentUser(userId: string) {
 
   return {
     ...user,
+    elo: user.elo ?? 1000,
     createdAt: user.createdAt.toISOString()
   };
 }

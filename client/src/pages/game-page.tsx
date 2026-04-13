@@ -315,6 +315,9 @@ export function GamePage() {
           {multiplayerStatusQuery.data?.multiplayer ? (
             <div className="border-[3px] border-black bg-[#fffdf7] px-3 py-1 text-xs font-black uppercase tracking-[0.1em] text-base-ink shadow-sticker">
               vs {multiplayerStatusQuery.data.opponentNickname ?? 'Player'}
+              {typeof multiplayerStatusQuery.data.opponentElo === 'number'
+                ? ` (ELO ${multiplayerStatusQuery.data.opponentElo})`
+                : ''}
             </div>
           ) : null}
         </div>

@@ -87,11 +87,45 @@ export function ResultsPage() {
                   <p>You</p>
                   <p>Score: {multiplayerResultQuery.data.you.score}</p>
                   <p>Accuracy: {multiplayerResultQuery.data.you.accuracy}%</p>
+                  <p>
+                    LP:{' '}
+                    <span
+                      className={
+                        multiplayerResultQuery.data.you.eloDelta >= 0 ? 'text-[#1c8c3a]' : 'text-[#bc002d]'
+                      }
+                    >
+                      {multiplayerResultQuery.data.you.eloDelta >= 0 ? '+' : ''}
+                      {multiplayerResultQuery.data.you.eloDelta}
+                    </span>
+                  </p>
+                  <p>
+                    ELO:{' '}
+                    {typeof multiplayerResultQuery.data.you.elo === 'number'
+                      ? multiplayerResultQuery.data.you.elo
+                      : 'Guest match'}
+                  </p>
                 </div>
                 <div className="border-[4px] border-black bg-[#fffdf7] p-3 text-sm font-bold text-base-ink shadow-sticker">
                   <p>{multiplayerResultQuery.data.opponent.nickname}</p>
                   <p>Score: {multiplayerResultQuery.data.opponent.score}</p>
                   <p>Accuracy: {multiplayerResultQuery.data.opponent.accuracy}%</p>
+                  <p>
+                    LP:{' '}
+                    <span
+                      className={
+                        multiplayerResultQuery.data.opponent.eloDelta >= 0 ? 'text-[#1c8c3a]' : 'text-[#bc002d]'
+                      }
+                    >
+                      {multiplayerResultQuery.data.opponent.eloDelta >= 0 ? '+' : ''}
+                      {multiplayerResultQuery.data.opponent.eloDelta}
+                    </span>
+                  </p>
+                  <p>
+                    ELO:{' '}
+                    {typeof multiplayerResultQuery.data.opponent.elo === 'number'
+                      ? multiplayerResultQuery.data.opponent.elo
+                      : 'Guest match'}
+                  </p>
                 </div>
               </div>
             </>

@@ -1,37 +1,63 @@
+import { useState } from 'react';
 import { LeaderboardTable } from '../components/game/leaderboard-table';
 import { Card } from '../components/ui/card';
 import { ErrorState } from '../components/ui/error-state';
 import { LoadingSpinner } from '../components/ui/loading-spinner';
 import { useAuth } from '../features/auth/auth-context';
 import { useHistoryQuery } from '../features/history/use-history-query';
-import { useLeaderboardQuery } from '../features/leaderboard/use-leaderboard-query';
+import { useEloLeaderboardQuery, useLeaderboardQuery } from '../features/leaderboard/use-leaderboard-query';
 
 export function LeaderboardPage() {
   const { isAuthenticated, user } = useAuth();
-  const leaderboardQuery = useLeaderboardQuery(1000);
+  const [rankingView, setRankingView] = useState<'single' | 'elo'>('single');
+  const singleLeaderboardQuery = useLeaderboardQuery(1000);
+  const eloLeaderboardQuery = useEloLeaderboardQuery(1000);
   const myHistoryQuery = useHistoryQuery(50, isAuthenticated);
 
-  if (leaderboardQuery.isLoading) {
+  const activeQuery = rankingView === 'single' ? singleLeaderboardQuery : eloLeaderboardQuery;
+  if (activeQuery.isLoading) {
     return <LoadingSpinner label="Loading leaderboard..." />;
   }
 
-  if (leaderboardQuery.isError || !leaderboardQuery.data) {
-    return <ErrorState title="Leaderboard unavailable" onRetry={() => leaderboardQuery.refetch()} />;
+  if (activeQuery.isError || !activeQuery.data) {
+    return <ErrorState title="Leaderboard unavailable" onRetry={() => activeQuery.refetch()} />;
   }
 
-  const allRows = leaderboardQuery.data.leaderboard;
-  const tableRows = allRows.slice(0, 50);
-  const highestScore = allRows.length ? Math.max(...allRows.map((row) => row.score)) : 0;
-  const avgScore = allRows.length ? Math.round(allRows.reduce((acc, row) => acc + row.score, 0) / allRows.length) : 0;
-  const avgAccuracy = allRows.length
-    ? Math.round((allRows.reduce((acc, row) => acc + (row.correctAnswers / row.totalRounds) * 100, 0) / allRows.length) * 10) / 10
+  const singleRows = singleLeaderboardQuery.data?.leaderboard ?? [];
+  const eloRows = eloLeaderboardQuery.data?.leaderboard ?? [];
+  const tableRows = (rankingView === 'single' ? singleRows : eloRows).slice(0, 50);
+
+  const highestSingleScore = singleRows.length ? Math.max(...singleRows.map((row) => row.score)) : 0;
+  const avgSingleScore = singleRows.length
+    ? Math.round(singleRows.reduce((acc, row) => acc + row.score, 0) / singleRows.length)
     : 0;
+  const avgSingleAccuracy = singleRows.length
+    ? Math.round(
+        (singleRows.reduce((acc, row) => acc + (row.correctAnswers / row.totalRounds) * 100, 0) / singleRows.length) *
+          10
+      ) / 10
+    : 0;
+
+  const highestElo = eloRows.length ? Math.max(...eloRows.map((row) => row.elo)) : 0;
+  const avgElo = eloRows.length ? Math.round(eloRows.reduce((acc, row) => acc + row.elo, 0) / eloRows.length) : 0;
+  const avgMatches = eloRows.length
+    ? Math.round(eloRows.reduce((acc, row) => acc + row.matchesPlayed, 0) / eloRows.length)
+    : 0;
+
   const myStats = myHistoryQuery.data?.stats;
   const hasMyStats = Boolean(isAuthenticated && myStats);
   const normalizedUserNickname = user?.nickname.trim().toLowerCase();
-  const myRankPosition =
+  const mySingleRank =
     normalizedUserNickname
-      ? allRows.find((row) => row.nickname.trim().toLowerCase() === normalizedUserNickname)?.position ?? null
+      ? singleRows.find((row) => row.nickname.trim().toLowerCase() === normalizedUserNickname)?.position ?? null
+      : null;
+  const myEloRank =
+    normalizedUserNickname
+      ? eloRows.find((row) => row.nickname.trim().toLowerCase() === normalizedUserNickname)?.position ?? null
+      : null;
+  const myEloPoints =
+    normalizedUserNickname
+      ? eloRows.find((row) => row.nickname.trim().toLowerCase() === normalizedUserNickname)?.elo ?? null
       : null;
 
   return (
@@ -42,9 +68,33 @@ export function LeaderboardPage() {
             <span className="comic-kicker">Ranking Board</span>
             <span className="ink-stamp">Top 50</span>
           </div>
-          <h1 className="panel-title mt-3 text-6xl">Global Leaderboard</h1>
+          <h1 className="panel-title mt-3 text-6xl">
+            {rankingView === 'single' ? 'Singleplayer Leaderboard' : 'Multiplayer ELO Leaderboard'}
+          </h1>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setRankingView('single')}
+              className={`border-[3px] border-black px-3 py-1 text-xs font-black uppercase tracking-[0.12em] shadow-sticker transition ${
+                rankingView === 'single' ? 'bg-[#ffd000] text-black' : 'bg-[#fffdf7] text-base-ink'
+              }`}
+            >
+              Singleplayer
+            </button>
+            <button
+              type="button"
+              onClick={() => setRankingView('elo')}
+              className={`border-[3px] border-black px-3 py-1 text-xs font-black uppercase tracking-[0.12em] shadow-sticker transition ${
+                rankingView === 'elo' ? 'bg-[#ffd000] text-black' : 'bg-[#fffdf7] text-base-ink'
+              }`}
+            >
+              Multiplayer (ELO)
+            </button>
+          </div>
           <div className="speech-bubble mt-4 max-w-2xl">
-            The highest scores across all players. Precision and pace decide everything here.
+            {rankingView === 'single'
+              ? 'Highest score runs from solo mode only.'
+              : 'Rated multiplayer ladder based on ELO points.'}
           </div>
         </Card>
 
@@ -52,43 +102,72 @@ export function LeaderboardPage() {
           <Card>
             <span className="comic-kicker">Your Stats</span>
             <div className="mt-4 grid grid-cols-2 gap-3 text-sm sm:text-base">
-              <div className="comic-note">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
-                  {hasMyStats ? 'Best Score' : 'Top Score'}
-                </p>
-                <p className="mt-1 text-2xl font-black text-slate-950">{hasMyStats ? myStats?.bestScore : highestScore}</p>
-              </div>
-              <div className="comic-note">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
-                  {hasMyStats ? 'Avg Score' : 'Avg Score (Top 50)'}
-                </p>
-                <p className="mt-1 text-2xl font-black text-slate-950">
-                  {hasMyStats ? Math.round(myStats?.averageScore ?? 0) : avgScore}
-                </p>
-              </div>
-              <div className="comic-note">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
-                  {hasMyStats ? 'Sessions' : 'Avg Accuracy (Top 50)'}
-                </p>
-                <p className="mt-1 text-2xl font-black text-slate-950">
-                  {hasMyStats ? myStats?.totalSessions : `${avgAccuracy}%`}
-                </p>
-              </div>
-              <div className="comic-note">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
-                  {hasMyStats ? 'Current Rank' : 'Ranked Runs (Top 50)'}
-                </p>
-                <p className="mt-1 text-base font-black text-slate-950">
-                  {hasMyStats ? (myRankPosition ? `#${myRankPosition}` : 'Unranked') : tableRows.length}
-                </p>
-              </div>
+              {rankingView === 'single' ? (
+                <>
+                  <div className="comic-note">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                      {hasMyStats ? 'Best Score' : 'Top Score'}
+                    </p>
+                    <p className="mt-1 text-2xl font-black text-slate-950">
+                      {hasMyStats ? myStats?.bestScore : highestSingleScore}
+                    </p>
+                  </div>
+                  <div className="comic-note">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                      {hasMyStats ? 'Avg Score' : 'Avg Score'}
+                    </p>
+                    <p className="mt-1 text-2xl font-black text-slate-950">
+                      {hasMyStats ? Math.round(myStats?.averageScore ?? 0) : avgSingleScore}
+                    </p>
+                  </div>
+                  <div className="comic-note">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                      {hasMyStats ? 'Sessions' : 'Avg Accuracy'}
+                    </p>
+                    <p className="mt-1 text-2xl font-black text-slate-950">
+                      {hasMyStats ? myStats?.totalSessions : `${avgSingleAccuracy}%`}
+                    </p>
+                  </div>
+                  <div className="comic-note">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">Current Rank</p>
+                    <p className="mt-1 text-base font-black text-slate-950">
+                      {hasMyStats ? (mySingleRank ? `#${mySingleRank}` : 'Unranked') : tableRows.length}
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="comic-note">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                      {isAuthenticated ? 'Your ELO' : 'Top ELO'}
+                    </p>
+                    <p className="mt-1 text-2xl font-black text-slate-950">
+                      {isAuthenticated ? myEloPoints ?? user?.elo ?? 1000 : highestElo}
+                    </p>
+                  </div>
+                  <div className="comic-note">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">Avg ELO</p>
+                    <p className="mt-1 text-2xl font-black text-slate-950">{avgElo}</p>
+                  </div>
+                  <div className="comic-note">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">Avg Matches</p>
+                    <p className="mt-1 text-2xl font-black text-slate-950">{avgMatches}</p>
+                  </div>
+                  <div className="comic-note">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">Current Rank</p>
+                    <p className="mt-1 text-base font-black text-slate-950">
+                      {isAuthenticated ? (myEloRank ? `#${myEloRank}` : 'Unranked') : tableRows.length}
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
           </Card>
         </div>
       </div>
 
       <div className="sfx-bam text-center">TOP 50</div>
-      <LeaderboardTable rows={tableRows} />
+      <LeaderboardTable rows={tableRows} rankingType={rankingView} />
     </div>
   );
 }

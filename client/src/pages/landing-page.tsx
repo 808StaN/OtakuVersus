@@ -1,8 +1,9 @@
 import { Link, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { GameModeSection } from '../components/game-mode-section';
 import { LeaderboardTable } from '../components/game/leaderboard-table';
 import { useAuth } from '../features/auth/auth-context';
-import { useLeaderboardQuery } from '../features/leaderboard/use-leaderboard-query';
+import { useEloLeaderboardQuery, useLeaderboardQuery } from '../features/leaderboard/use-leaderboard-query';
 import { useStartGameMutation } from '../features/game/use-game';
 import { Card } from '../components/ui/card';
 import { LoadingSpinner } from '../components/ui/loading-spinner';
@@ -10,7 +11,9 @@ import { LoadingSpinner } from '../components/ui/loading-spinner';
 export function LandingPage() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const leaderboardQuery = useLeaderboardQuery(5);
+  const [rankingView, setRankingView] = useState<'single' | 'elo'>('single');
+  const singleLeaderboardQuery = useLeaderboardQuery(5);
+  const eloLeaderboardQuery = useEloLeaderboardQuery(5);
   const startGameMutation = useStartGameMutation();
 
   const handleSoloStart = async () => {
@@ -46,11 +49,39 @@ export function LandingPage() {
             <span className="comic-kicker">Ranking</span>
             <span className="ink-stamp">Live</span>
           </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setRankingView('single')}
+              className={`border-[3px] border-black px-3 py-1 text-xs font-black uppercase tracking-[0.12em] shadow-sticker transition ${
+                rankingView === 'single' ? 'bg-[#ffd000] text-black' : 'bg-[#fffdf7] text-base-ink'
+              }`}
+            >
+              Singleplayer
+            </button>
+            <button
+              type="button"
+              onClick={() => setRankingView('elo')}
+              className={`border-[3px] border-black px-3 py-1 text-xs font-black uppercase tracking-[0.12em] shadow-sticker transition ${
+                rankingView === 'elo' ? 'bg-[#ffd000] text-black' : 'bg-[#fffdf7] text-base-ink'
+              }`}
+            >
+              Multiplayer (ELO)
+            </button>
+          </div>
           <div className="mt-3 overflow-hidden border-[4px] border-black bg-[#f8f3e6] shadow-sticker">
-            {leaderboardQuery.isLoading ? (
+            {(rankingView === 'single' ? singleLeaderboardQuery.isLoading : eloLeaderboardQuery.isLoading) ? (
               <LoadingSpinner label="Loading top players..." />
             ) : (
-              <LeaderboardTable rows={leaderboardQuery.data?.leaderboard ?? []} embedded />
+              <LeaderboardTable
+                rows={
+                  rankingView === 'single'
+                    ? singleLeaderboardQuery.data?.leaderboard ?? []
+                    : eloLeaderboardQuery.data?.leaderboard ?? []
+                }
+                rankingType={rankingView}
+                embedded
+              />
             )}
           </div>
           <div className="mt-4 text-right">
