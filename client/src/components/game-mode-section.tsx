@@ -35,7 +35,7 @@ export function GameModeSection({
               style={{ WebkitTextStroke: '1.5px #000', textShadow: '3px 3px 0 #000' }}
             >
               <span className="text-white">Otaku</span>
-              <span className="!text-[#bc002d]" style={{ color: '#bc002d' }}>
+              <span className="!text-[#cf1a4f]" style={{ color: '#cf1a4f' }}>
                 Versus
               </span>
             </h1>

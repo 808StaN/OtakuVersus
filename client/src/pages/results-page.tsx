@@ -52,6 +52,68 @@ export function ResultsPage() {
             </span>
           </div>
 
+          {multiplayerResultQuery.data?.multiplayer ? (
+            <div className="mt-4 space-y-3">
+              {multiplayerResultQuery.data.ready ? (
+                <>
+                  <div className="border-[4px] border-black bg-[#fffdf7] px-3 py-2 text-sm font-black text-base-ink shadow-sticker">
+                    Result: {multiplayerResultQuery.data.result}
+                  </div>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div className="border-[4px] border-black bg-[#fffdf7] p-3 text-sm font-bold text-base-ink shadow-sticker">
+                      <p>You</p>
+                      <p>Score: {multiplayerResultQuery.data.you.score}</p>
+                      <p>Accuracy: {multiplayerResultQuery.data.you.accuracy}%</p>
+                      <p>
+                        LP:{' '}
+                        <span
+                          className={
+                            multiplayerResultQuery.data.you.eloDelta >= 0 ? 'text-[#1c8c3a]' : 'text-[#bc002d]'
+                          }
+                        >
+                          {multiplayerResultQuery.data.you.eloDelta >= 0 ? '+' : ''}
+                          {multiplayerResultQuery.data.you.eloDelta}
+                        </span>
+                      </p>
+                      <p>
+                        ELO:{' '}
+                        {typeof multiplayerResultQuery.data.you.elo === 'number'
+                          ? multiplayerResultQuery.data.you.elo
+                          : 'Guest match'}
+                      </p>
+                    </div>
+                    <div className="border-[4px] border-black bg-[#fffdf7] p-3 text-sm font-bold text-base-ink shadow-sticker">
+                      <p>{multiplayerResultQuery.data.opponent.nickname}</p>
+                      <p>Score: {multiplayerResultQuery.data.opponent.score}</p>
+                      <p>Accuracy: {multiplayerResultQuery.data.opponent.accuracy}%</p>
+                      <p>
+                        LP:{' '}
+                        <span
+                          className={
+                            multiplayerResultQuery.data.opponent.eloDelta >= 0 ? 'text-[#1c8c3a]' : 'text-[#bc002d]'
+                          }
+                        >
+                          {multiplayerResultQuery.data.opponent.eloDelta >= 0 ? '+' : ''}
+                          {multiplayerResultQuery.data.opponent.eloDelta}
+                        </span>
+                      </p>
+                      <p>
+                        ELO:{' '}
+                        {typeof multiplayerResultQuery.data.opponent.elo === 'number'
+                          ? multiplayerResultQuery.data.opponent.elo
+                          : 'Guest match'}
+                      </p>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <p className="text-sm font-bold text-base-ink/80">
+                  Waiting for {multiplayerResultQuery.data.opponentNickname} to finish...
+                </p>
+              )}
+            </div>
+          ) : null}
+
           <div className="mt-6 flex flex-wrap gap-3">
             <Button
               loading={startGameMutation.isPending}
@@ -76,69 +138,6 @@ export function ResultsPage() {
           </div>
         </Card>
       </div>
-
-      {multiplayerResultQuery.data?.multiplayer ? (
-        <Card className="space-y-3">
-          <h2 className="panel-title text-4xl">Multiplayer Result</h2>
-          {multiplayerResultQuery.data.ready ? (
-            <>
-              <div className="border-[4px] border-black bg-[#fffdf7] px-3 py-2 text-sm font-black text-base-ink shadow-sticker">
-                Result: {multiplayerResultQuery.data.result}
-              </div>
-              <div className="grid gap-3 md:grid-cols-2">
-                <div className="border-[4px] border-black bg-[#fffdf7] p-3 text-sm font-bold text-base-ink shadow-sticker">
-                  <p>You</p>
-                  <p>Score: {multiplayerResultQuery.data.you.score}</p>
-                  <p>Accuracy: {multiplayerResultQuery.data.you.accuracy}%</p>
-                  <p>
-                    LP:{' '}
-                    <span
-                      className={
-                        multiplayerResultQuery.data.you.eloDelta >= 0 ? 'text-[#1c8c3a]' : 'text-[#bc002d]'
-                      }
-                    >
-                      {multiplayerResultQuery.data.you.eloDelta >= 0 ? '+' : ''}
-                      {multiplayerResultQuery.data.you.eloDelta}
-                    </span>
-                  </p>
-                  <p>
-                    ELO:{' '}
-                    {typeof multiplayerResultQuery.data.you.elo === 'number'
-                      ? multiplayerResultQuery.data.you.elo
-                      : 'Guest match'}
-                  </p>
-                </div>
-                <div className="border-[4px] border-black bg-[#fffdf7] p-3 text-sm font-bold text-base-ink shadow-sticker">
-                  <p>{multiplayerResultQuery.data.opponent.nickname}</p>
-                  <p>Score: {multiplayerResultQuery.data.opponent.score}</p>
-                  <p>Accuracy: {multiplayerResultQuery.data.opponent.accuracy}%</p>
-                  <p>
-                    LP:{' '}
-                    <span
-                      className={
-                        multiplayerResultQuery.data.opponent.eloDelta >= 0 ? 'text-[#1c8c3a]' : 'text-[#bc002d]'
-                      }
-                    >
-                      {multiplayerResultQuery.data.opponent.eloDelta >= 0 ? '+' : ''}
-                      {multiplayerResultQuery.data.opponent.eloDelta}
-                    </span>
-                  </p>
-                  <p>
-                    ELO:{' '}
-                    {typeof multiplayerResultQuery.data.opponent.elo === 'number'
-                      ? multiplayerResultQuery.data.opponent.elo
-                      : 'Guest match'}
-                  </p>
-                </div>
-              </div>
-            </>
-          ) : (
-            <p className="text-sm font-bold text-base-ink/80">
-              Waiting for {multiplayerResultQuery.data.opponentNickname} to finish...
-            </p>
-          )}
-        </Card>
-      ) : null}
 
       <section className="space-y-3">
         <h2 className="panel-title text-5xl">Round Breakdown</h2>
