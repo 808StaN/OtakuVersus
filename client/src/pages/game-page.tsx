@@ -42,6 +42,7 @@ export function GamePage() {
   const [roundToastVisible, setRoundToastVisible] = useState(false);
   const roundToastTimeoutRef = useRef<number | null>(null);
   const roundToastFadeRef = useRef<number | null>(null);
+  const hasShownInitialCountdownRef = useRef(false);
   const [answerInput, setAnswerInput] = useState('');
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [canFinishAfterModal, setCanFinishAfterModal] = useState(false);
@@ -64,12 +65,27 @@ export function GamePage() {
   );
 
   useEffect(() => {
+    hasShownInitialCountdownRef.current = false;
+    setPreRoundCountdown(null);
+  }, [sessionId]);
+
+  useEffect(() => {
     if (!currentRoundId) return;
     setRoundStartAt(Date.now());
     setTimerMs(ROUND_TIME_MS);
     setMultiplayerTimerState(null);
     setAnswerInput('');
     setIsInputFocused(false);
+
+    const isMultiplayer = Boolean(sessionQuery.data?.session.multiplayer);
+    const roundOrder = frozenRound?.order ?? sessionQuery.data?.currentRound?.order ?? 0;
+
+    if (isMultiplayer && roundOrder === 1 && !hasShownInitialCountdownRef.current) {
+      setPreRoundCountdown(3);
+      hasShownInitialCountdownRef.current = true;
+    } else {
+      setPreRoundCountdown(null);
+    }
   }, [currentRoundId]);
 
   useEffect(() => {
@@ -82,17 +98,6 @@ export function GamePage() {
         : ROUND_TIME_MS;
     setMultiplayerTimerState({ remainingMs: status.roundRemainingMs, durationMs });
     setTimerMs(status.roundRemainingMs);
-
-    if (typeof status.roundStartedAtMs === 'number') {
-      const msUntilStart = status.roundStartedAtMs - Date.now();
-      if (msUntilStart > 0) {
-        setPreRoundCountdown(Math.max(1, Math.ceil(msUntilStart / 1000)));
-      } else {
-        setPreRoundCountdown(null);
-      }
-    } else {
-      setPreRoundCountdown(null);
-    }
   }, [multiplayerStatusQuery.data]);
 
   useEffect(() => {
@@ -379,9 +384,9 @@ export function GamePage() {
 
       {preRoundCountdown !== null ? (
         <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-[1px]">
-          <div className="impact-burst border-[4px] border-black bg-[#ffd000] px-9 py-7 text-center shadow-panel">
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-black/70">Get Ready</p>
-            <p className="mt-2 text-7xl font-black leading-none text-[#bc002d]">{preRoundCountdown}</p>
+          <div className="border-[4px] border-black bg-[#fffdf7] px-10 py-8 text-center shadow-panel">
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-base-ink/70">Get Ready</p>
+            <p className="sfx-bam mt-2 !text-[#bc002d]">{preRoundCountdown}</p>
           </div>
         </div>
       ) : null}

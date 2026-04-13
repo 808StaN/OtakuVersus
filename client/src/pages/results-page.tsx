@@ -42,15 +42,13 @@ export function ResultsPage() {
             <span className="ink-stamp">SCORE LOG</span>
           </div>
 
-          <h1 className="panel-title mt-3 text-6xl">Mission Complete</h1>
-          <div className="speech-bubble mt-4 max-w-2xl">
-            {summary.correctAnswers}/{summary.totalRounds} correct answers ({summary.accuracy}% accuracy)
-          </div>
-
           <div className="mt-5 flex flex-wrap items-center gap-3">
             <ScoreBadge score={summary.score} className="text-base" />
             <span className="flex h-[48px] items-center justify-center border-[4px] border-black bg-[#cf1a4f] px-4 py-1 text-sm font-black uppercase tracking-[0.12em] text-white shadow-sticker">
               Accuracy: {summary.accuracy}%
+            </span>
+            <span className="flex h-[48px] items-center justify-center border-[4px] border-black bg-[#fffdf7] px-4 py-1 text-sm font-black uppercase tracking-[0.12em] text-base-ink shadow-sticker">
+              {summary.correctAnswers}/{summary.totalRounds} Correct Answers
             </span>
           </div>
 
@@ -58,6 +56,11 @@ export function ResultsPage() {
             <Button
               loading={startGameMutation.isPending}
               onClick={async () => {
+                if (summary.mode === 'MULTIPLAYER') {
+                  navigate('/multiplayer');
+                  return;
+                }
+
                 const session = await startGameMutation.mutateAsync(5);
                 navigate(`/game/${session.session.id}`);
               }}

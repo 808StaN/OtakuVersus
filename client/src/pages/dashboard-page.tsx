@@ -50,7 +50,7 @@ export function DashboardPage() {
                 <p className="mt-1 text-2xl font-black text-slate-950">{singleRank ? `#${singleRank}` : 'Unranked'}</p>
               </div>
               <div className="comic-note">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">Sessions</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">Matches Played</p>
                 <p className="mt-1 text-2xl font-black text-slate-950">{singleStats.sessionsPlayed}</p>
               </div>
               <div className="comic-note">
