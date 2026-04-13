@@ -60,9 +60,9 @@ export async function getEloLeaderboard(limit = 25) {
         orderBy: {
           finishedAt: 'desc'
         },
-        take: 1,
         select: {
-          finishedAt: true
+          finishedAt: true,
+          eloDelta: true
         }
       },
       _count: {
@@ -78,12 +78,19 @@ export async function getEloLeaderboard(limit = 25) {
     }
   });
 
-  return rows.map((row, index) => ({
-    position: index + 1,
-    userId: row.id,
-    nickname: row.nickname,
-    elo: row.elo ?? 0,
-    matchesPlayed: row._count.gameSessions,
-    playedAt: row.gameSessions[0]?.finishedAt?.toISOString() ?? null
-  }));
+  return rows.map((row, index) => {
+    const matchesPlayed = row._count.gameSessions;
+    const wins = row.gameSessions.filter((session) => session.eloDelta > 0).length;
+    const winRatio = matchesPlayed > 0 ? Number(((wins / matchesPlayed) * 100).toFixed(1)) : 0;
+
+    return {
+      position: index + 1,
+      userId: row.id,
+      nickname: row.nickname,
+      elo: row.elo ?? 0,
+      matchesPlayed,
+      winRatio,
+      playedAt: row.gameSessions[0]?.finishedAt?.toISOString() ?? null
+    };
+  });
 }

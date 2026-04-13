@@ -39,8 +39,10 @@ export function LeaderboardPage() {
     : 0;
 
   const highestElo = eloRows.length ? Math.max(...eloRows.map((row) => row.elo)) : 0;
-  const avgElo = eloRows.length ? Math.round(eloRows.reduce((acc, row) => acc + row.elo, 0) / eloRows.length) : 0;
-  const avgMatches = eloRows.length
+  const avgWinRatio = eloRows.length
+    ? Number((eloRows.reduce((acc, row) => acc + row.winRatio, 0) / eloRows.length).toFixed(1))
+    : 0;
+  const avgMatchesPlayed = eloRows.length
     ? Math.round(eloRows.reduce((acc, row) => acc + row.matchesPlayed, 0) / eloRows.length)
     : 0;
 
@@ -59,6 +61,14 @@ export function LeaderboardPage() {
     normalizedUserNickname
       ? eloRows.find((row) => row.nickname.trim().toLowerCase() === normalizedUserNickname)?.elo ?? null
       : null;
+  const myMatchesPlayed =
+    normalizedUserNickname
+      ? eloRows.find((row) => row.nickname.trim().toLowerCase() === normalizedUserNickname)?.matchesPlayed ?? null
+      : null;
+  const myWinRatio =
+    normalizedUserNickname
+      ? eloRows.find((row) => row.nickname.trim().toLowerCase() === normalizedUserNickname)?.winRatio ?? null
+      : null;
 
   return (
     <div className="space-y-5">
@@ -69,7 +79,7 @@ export function LeaderboardPage() {
             <span className="ink-stamp">Top 50</span>
           </div>
           <h1 className="panel-title mt-3 text-6xl">
-            {rankingView === 'single' ? 'Singleplayer Leaderboard' : 'Multiplayer ELO Leaderboard'}
+            {rankingView === 'single' ? 'Singleplayer Leaderboard' : 'Multiplayer Leaderboard'}
           </h1>
           <div className="mt-4 flex flex-wrap gap-2">
             <button
@@ -88,10 +98,10 @@ export function LeaderboardPage() {
                 rankingView === 'elo' ? 'bg-[#ffd000] text-black' : 'bg-[#fffdf7] text-base-ink'
               }`}
             >
-              Multiplayer (ELO)
+              Multiplayer
             </button>
           </div>
-          <div className="speech-bubble mt-4 max-w-2xl">
+          <div className="mt-4 max-w-2xl border-[4px] border-black bg-[#fffdf7] px-4 py-3 text-base font-bold text-base-ink shadow-sticker">
             {rankingView === 'single'
               ? 'Highest score runs from solo mode only.'
               : 'Rated multiplayer ladder based on ELO points.'}
@@ -146,12 +156,18 @@ export function LeaderboardPage() {
                     </p>
                   </div>
                   <div className="comic-note">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">Avg ELO</p>
-                    <p className="mt-1 text-2xl font-black text-slate-950">{avgElo}</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">Win Ratio</p>
+                    <p className="mt-1 text-2xl font-black text-slate-950">
+                      {isAuthenticated ? `${myWinRatio ?? 0}%` : `${avgWinRatio}%`}
+                    </p>
                   </div>
                   <div className="comic-note">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">Avg Matches</p>
-                    <p className="mt-1 text-2xl font-black text-slate-950">{avgMatches}</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                      Matches Played
+                    </p>
+                    <p className="mt-1 text-2xl font-black text-slate-950">
+                      {isAuthenticated ? myMatchesPlayed ?? 0 : avgMatchesPlayed}
+                    </p>
                   </div>
                   <div className="comic-note">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">Current Rank</p>

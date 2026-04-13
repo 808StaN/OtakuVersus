@@ -66,7 +66,7 @@ export function LandingPage() {
                 rankingView === 'elo' ? 'bg-[#ffd000] text-black' : 'bg-[#fffdf7] text-base-ink'
               }`}
             >
-              Multiplayer (ELO)
+              Multiplayer
             </button>
           </div>
           <div className="mt-3 overflow-hidden border-[4px] border-black bg-[#f8f3e6] shadow-sticker">

@@ -35,7 +35,9 @@ export function LeaderboardTable({
               <th className={compact ? 'px-3 py-2' : 'px-4 py-3'}>
                 {rankingType === 'single' ? 'Accuracy' : 'Matches'}
               </th>
-              {!compact ? <th className="px-4 py-3">Date</th> : null}
+              {!compact ? (
+                <th className="px-4 py-3">{rankingType === 'single' ? 'Date' : 'Win Ratio'}</th>
+              ) : null}
             </tr>
           </thead>
           <tbody>
@@ -66,7 +68,13 @@ export function LeaderboardTable({
                   <td className={compact ? 'px-3 py-2' : 'px-4 py-3'}>
                     {rankingType === 'single' ? `${accuracy}%` : (row as EloLeaderboardRow).matchesPlayed}
                   </td>
-                  {!compact ? <td className="px-4 py-3 text-base-ink/70">{formatDate(row.playedAt)}</td> : null}
+                  {!compact ? (
+                    <td className="px-4 py-3 text-base-ink/70">
+                      {rankingType === 'single'
+                        ? formatDate(row.playedAt)
+                        : `${(row as EloLeaderboardRow).winRatio}%`}
+                    </td>
+                  ) : null}
                 </tr>
               );
             })}
