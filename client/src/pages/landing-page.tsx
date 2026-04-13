@@ -47,11 +47,7 @@ export function LandingPage() {
               <Link to="/dashboard">
                 <Button>Play Now</Button>
               </Link>
-            ) : (
-              <Button onClick={handleMultiplayerStart}>
-                Multiplayer Mode
-              </Button>
-            )}
+            ) : null}
           </div>
         </Card>
 
