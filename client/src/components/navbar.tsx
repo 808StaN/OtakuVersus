@@ -37,7 +37,7 @@ export function Navbar() {
                 <Link
                   key={item.to}
                   to={item.to}
-                  className="border-[4px] border-black bg-[#ffe1ea] px-3 py-1 text-xs font-black uppercase tracking-[0.12em] shadow-sticker transition hover:-translate-y-[2px]"
+                  className="border-[4px] border-black bg-[#fff8e7] px-3 py-1 text-xs font-black uppercase tracking-[0.12em] shadow-sticker transition hover:-translate-y-[2px]"
                 >
                   {item.label}
                 </Link>

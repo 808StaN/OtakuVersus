@@ -7,14 +7,19 @@ import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { LoadingSpinner } from '../components/ui/loading-spinner';
 import { EmptyState } from '../components/ui/empty-state';
-import { LeaderboardTable } from '../components/game/leaderboard-table';
 
 export function DashboardPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const historyQuery = useHistoryQuery(5);
-  const leaderboardQuery = useLeaderboardQuery(5);
+  const leaderboardQuery = useLeaderboardQuery(1000);
   const startGameMutation = useStartGameMutation();
+  const leaderboardRows = leaderboardQuery.data?.leaderboard ?? [];
+  const normalizedUserNickname = user?.nickname.trim().toLowerCase();
+  const currentRankPosition =
+    normalizedUserNickname
+      ? leaderboardRows.find((row) => row.nickname.trim().toLowerCase() === normalizedUserNickname)?.position ?? null
+      : null;
 
   const handleStartGame = async () => {
     const payload = await startGameMutation.mutateAsync(5);
@@ -57,11 +62,13 @@ export function DashboardPage() {
         </Card>
         <Card>
           <p className="text-xs uppercase tracking-[0.16em] text-base-ink/70">Current Rank</p>
-          <p className="mt-2 text-2xl font-black text-[#ff7a00]">{historyQuery.data?.stats.rank ?? 'Unranked'}</p>
+          <p className="mt-2 text-2xl font-black text-[#ff7a00]">
+            {leaderboardQuery.isLoading ? 'Loading...' : currentRankPosition ? `#${currentRankPosition}` : 'Unranked'}
+          </p>
         </Card>
       </section>
 
-      <section className="comic-layout-asym">
+      <section>
         <Card>
           <h2 className="panel-title text-5xl">Recent Sessions</h2>
           {historyQuery.isLoading ? (
@@ -93,15 +100,6 @@ export function DashboardPage() {
             />
           )}
         </Card>
-
-        <div>
-          <h2 className="panel-title mb-3 text-5xl">Top Arena Players</h2>
-          {leaderboardQuery.isLoading ? (
-            <LoadingSpinner label="Loading leaderboard..." />
-          ) : (
-            <LeaderboardTable rows={leaderboardQuery.data?.leaderboard ?? []} />
-          )}
-        </div>
       </section>
     </div>
   );

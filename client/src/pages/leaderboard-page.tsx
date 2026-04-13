@@ -1,12 +1,15 @@
-import { mangaAssets } from '../assets/manga-assets';
 import { LeaderboardTable } from '../components/game/leaderboard-table';
 import { Card } from '../components/ui/card';
 import { ErrorState } from '../components/ui/error-state';
 import { LoadingSpinner } from '../components/ui/loading-spinner';
+import { useAuth } from '../features/auth/auth-context';
+import { useHistoryQuery } from '../features/history/use-history-query';
 import { useLeaderboardQuery } from '../features/leaderboard/use-leaderboard-query';
 
 export function LeaderboardPage() {
-  const leaderboardQuery = useLeaderboardQuery(50);
+  const { isAuthenticated, user } = useAuth();
+  const leaderboardQuery = useLeaderboardQuery(1000);
+  const myHistoryQuery = useHistoryQuery(50, isAuthenticated);
 
   if (leaderboardQuery.isLoading) {
     return <LoadingSpinner label="Loading leaderboard..." />;
@@ -15,6 +18,21 @@ export function LeaderboardPage() {
   if (leaderboardQuery.isError || !leaderboardQuery.data) {
     return <ErrorState title="Leaderboard unavailable" onRetry={() => leaderboardQuery.refetch()} />;
   }
+
+  const allRows = leaderboardQuery.data.leaderboard;
+  const tableRows = allRows.slice(0, 50);
+  const highestScore = allRows.length ? Math.max(...allRows.map((row) => row.score)) : 0;
+  const avgScore = allRows.length ? Math.round(allRows.reduce((acc, row) => acc + row.score, 0) / allRows.length) : 0;
+  const avgAccuracy = allRows.length
+    ? Math.round((allRows.reduce((acc, row) => acc + (row.correctAnswers / row.totalRounds) * 100, 0) / allRows.length) * 10) / 10
+    : 0;
+  const myStats = myHistoryQuery.data?.stats;
+  const hasMyStats = Boolean(isAuthenticated && myStats);
+  const normalizedUserNickname = user?.nickname.trim().toLowerCase();
+  const myRankPosition =
+    normalizedUserNickname
+      ? allRows.find((row) => row.nickname.trim().toLowerCase() === normalizedUserNickname)?.position ?? null
+      : null;
 
   return (
     <div className="space-y-5">
@@ -30,18 +48,47 @@ export function LeaderboardPage() {
           </div>
         </Card>
 
-        <div className="space-y-4 panel-overlap-right">
-          <div className="comic-bg-panel">
-            <img src={mangaAssets.backgrounds.auditorium} alt="Tournament stage" className="h-32 w-full object-cover" loading="lazy" />
-          </div>
-          <Card className="overflow-hidden p-0">
-            <img src={mangaAssets.portraits.heroScout} alt="Ranking rival" className="h-48 w-full object-cover" loading="lazy" />
+        <div className="space-y-4">
+          <Card>
+            <span className="comic-kicker">Your Stats</span>
+            <div className="mt-4 grid grid-cols-2 gap-3 text-sm sm:text-base">
+              <div className="comic-note">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                  {hasMyStats ? 'Best Score' : 'Top Score'}
+                </p>
+                <p className="mt-1 text-2xl font-black text-slate-950">{hasMyStats ? myStats?.bestScore : highestScore}</p>
+              </div>
+              <div className="comic-note">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                  {hasMyStats ? 'Avg Score' : 'Avg Score (Top 50)'}
+                </p>
+                <p className="mt-1 text-2xl font-black text-slate-950">
+                  {hasMyStats ? Math.round(myStats?.averageScore ?? 0) : avgScore}
+                </p>
+              </div>
+              <div className="comic-note">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                  {hasMyStats ? 'Sessions' : 'Avg Accuracy (Top 50)'}
+                </p>
+                <p className="mt-1 text-2xl font-black text-slate-950">
+                  {hasMyStats ? myStats?.totalSessions : `${avgAccuracy}%`}
+                </p>
+              </div>
+              <div className="comic-note">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                  {hasMyStats ? 'Current Rank' : 'Ranked Runs (Top 50)'}
+                </p>
+                <p className="mt-1 text-base font-black text-slate-950">
+                  {hasMyStats ? (myRankPosition ? `#${myRankPosition}` : 'Unranked') : tableRows.length}
+                </p>
+              </div>
+            </div>
           </Card>
         </div>
       </div>
 
-      <div className="sfx-bam text-center">TOURNAMENT ARC</div>
-      <LeaderboardTable rows={leaderboardQuery.data.leaderboard} />
+      <div className="sfx-bam text-center">TOP 50</div>
+      <LeaderboardTable rows={tableRows} />
     </div>
   );
 }
