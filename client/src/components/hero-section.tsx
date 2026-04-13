@@ -3,12 +3,12 @@ import { Button } from './ui/button';
 
 export function HeroSection({
   isAuthenticated,
-  onGuestMultiplayerStart,
+  onMultiplayerStart,
   onSoloStart,
   soloLoading = false
 }: {
   isAuthenticated: boolean;
-  onGuestMultiplayerStart: () => void;
+  onMultiplayerStart: () => void;
   onSoloStart: () => void;
   soloLoading?: boolean;
 }) {
@@ -52,10 +52,15 @@ export function HeroSection({
                 <Button size="lg">Start Game</Button>
               </Link>
             ) : (
-              <Button size="lg" onClick={onGuestMultiplayerStart}>
+              <Button size="lg" onClick={onMultiplayerStart}>
                 Play as Guest
               </Button>
             )}
+            {isAuthenticated ? (
+              <Button size="lg" onClick={onMultiplayerStart}>
+                Multiplayer Mode
+              </Button>
+            ) : null}
             {!isAuthenticated ? (
               <Link to="/register">
                 <Button size="lg" variant="secondary">

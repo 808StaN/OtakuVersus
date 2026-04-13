@@ -42,6 +42,9 @@ export function DashboardPage() {
           <Button onClick={handleStartGame} loading={startGameMutation.isPending}>
             Start New Game
           </Button>
+          <Button onClick={() => navigate('/multiplayer')}>
+            Multiplayer Mode
+          </Button>
           <Button variant="secondary" onClick={() => navigate('/history')}>
             View History
           </Button>

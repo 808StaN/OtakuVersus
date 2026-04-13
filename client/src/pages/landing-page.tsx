@@ -21,7 +21,7 @@ export function LandingPage() {
     navigate(`/game/${payload.session.id}`);
   };
 
-  const handleGuestMultiplayerStart = () => {
+  const handleMultiplayerStart = () => {
     navigate('/multiplayer');
   };
 
@@ -29,7 +29,7 @@ export function LandingPage() {
     <div className="space-y-10">
       <HeroSection
         isAuthenticated={isAuthenticated}
-        onGuestMultiplayerStart={handleGuestMultiplayerStart}
+        onMultiplayerStart={handleMultiplayerStart}
         onSoloStart={handleSoloStart}
         soloLoading={startGameMutation.isPending}
       />
@@ -48,7 +48,7 @@ export function LandingPage() {
                 <Button>Play Now</Button>
               </Link>
             ) : (
-              <Button onClick={handleGuestMultiplayerStart}>
+              <Button onClick={handleMultiplayerStart}>
                 Multiplayer Mode
               </Button>
             )}
