@@ -1,7 +1,6 @@
 import { FormEvent, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { HttpError } from '../api/http';
-import { mangaAssets } from '../assets/manga-assets';
 import { useAuth } from '../features/auth/auth-context';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
@@ -45,16 +44,13 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="mx-auto comic-layout-asym max-w-5xl">
+    <div className="mx-auto w-full max-w-[38rem]">
       <Card>
         <div className="flex items-center justify-between gap-3">
           <span className="comic-kicker">Join Arena</span>
           <span className="ink-stamp">New</span>
         </div>
         <h1 className="panel-title mt-3 text-6xl">Create Account</h1>
-        <div className="speech-bubble mt-4">
-          Create your profile and dominate the anime detective ranking.
-        </div>
 
         <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
           <Input
@@ -104,15 +100,6 @@ export function RegisterPage() {
           </Link>
         </p>
       </Card>
-
-      <div className="space-y-4 panel-overlap-right">
-        <div className="comic-bg-panel">
-          <img src={mangaAssets.backgrounds.hallwayDay} alt="Anime hallway" className="h-32 w-full object-cover" loading="lazy" />
-        </div>
-        <Card className="overflow-hidden p-0">
-          <img src={mangaAssets.portraits.heroOrange} alt="Anime character portrait" className="h-64 w-full object-cover" loading="lazy" />
-        </Card>
-      </div>
     </div>
   );
 }

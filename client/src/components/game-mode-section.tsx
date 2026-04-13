@@ -27,7 +27,7 @@ export function GameModeSection({
       </div>
 
       <div className="relative z-10 comic-gutters">
-        <div className="space-y-5">
+        <div className="space-y-3">
           <p className="comic-kicker">Anime Guessing Arena</p>
           <div className="relative">
             <h1
@@ -46,24 +46,30 @@ export function GameModeSection({
             goal: prove you're the biggest anime fan.
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 pt-1">
-            {!isAuthenticated ? (
-              <Button size="lg" onClick={onMultiplayerStart}>
-                Play as Guest
-              </Button>
-            ) : null}
-            {!isAuthenticated ? (
-              <Link to="/register">
-                <Button size="lg" variant="secondary">
-                  Create Account
-                </Button>
-              </Link>
-            ) : null}
-            <Link to="/leaderboard">
-              <Button size="lg" variant="secondary">
-                Explore Leaderboard
-              </Button>
-            </Link>
+          <div className="-mt-1 flex flex-col gap-2 pt-0">
+            <div className="flex min-h-[165px] items-end gap-3 md:min-h-[190px]">
+              <img
+                src="/images/anime_boy_pointing.png"
+                alt="Anime boy pointing up"
+                className="-mb-12 ml-4 h-56 w-auto object-contain md:-mb-14 md:ml-6 md:h-64"
+                loading="lazy"
+              />
+              {!isAuthenticated ? (
+                <div className="mb-4 ml-2 max-w-[280px] md:mb-6">
+                  <p className="mb-2 text-xs font-black uppercase tracking-[0.12em] text-[#ffd000]">
+                    Join Us
+                  </p>
+                  <p className="mb-3 text-sm font-bold text-white/95">
+                    Create your account and climb the ranks to claim the title of the ultimate anime fan.
+                  </p>
+                  <Link to="/register">
+                    <Button size="lg" className="w-full px-7 py-4 text-lg">
+                      Create Account
+                    </Button>
+                  </Link>
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
 
