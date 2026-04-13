@@ -47,18 +47,9 @@ export function HeroSection({
           </div>
 
           <div className="flex flex-wrap items-center gap-3 pt-1">
-            {isAuthenticated ? (
-              <Link to="/dashboard">
-                <Button size="lg">Start Game</Button>
-              </Link>
-            ) : (
+            {!isAuthenticated ? (
               <Button size="lg" onClick={onMultiplayerStart}>
                 Play as Guest
-              </Button>
-            )}
-            {isAuthenticated ? (
-              <Button size="lg" onClick={onMultiplayerStart}>
-                Multiplayer Mode
               </Button>
             ) : null}
             {!isAuthenticated ? (
@@ -78,25 +69,25 @@ export function HeroSection({
 
         <div className="space-y-3 panel-overlap-right">
           <div className="manga-panel p-4">
-            <p className="text-xs uppercase tracking-[0.16em] text-[#cf1a4f]">Solo Challenge</p>
+            <p className="text-sm font-black uppercase tracking-[0.16em] text-[#cf1a4f]">SinglePlayer</p>
             <p className="mt-2 text-sm text-base-ink/85">
               Play a classic solo run with 5 rounds and immediate score feedback after each answer.
             </p>
             <div className="mt-3">
               <Button onClick={onSoloStart} loading={soloLoading} size="sm">
-                Solo Mode
+                Play
               </Button>
             </div>
           </div>
-          <div className="comic-bg-panel">
-            <img
-              src="/images/bg_otakuversus.png"
-              alt="Anime city panel"
-              className="h-40 w-full object-cover object-center"
-              loading="lazy"
-            />
-            <div className="absolute bottom-3 left-3 border-[4px] border-black bg-[#cf1a4f] px-3 py-1 text-xs font-black uppercase tracking-[0.13em] text-white shadow-sticker">
-              Tokyo Vibe
+          <div className="manga-panel p-4">
+            <p className="text-sm font-black uppercase tracking-[0.16em] text-[#cf1a4f]">Multiplayer</p>
+            <p className="mt-2 text-sm text-base-ink/85">
+              Jump into matchmaking and battle another player live in the same timed round set.
+            </p>
+            <div className="mt-3">
+              <Button onClick={onMultiplayerStart} size="sm">
+                Play
+              </Button>
             </div>
           </div>
         </div>
