@@ -1,0 +1,337 @@
+@import url('https://fonts.googleapis.com/css2?family=Bangers&family=Nunito+Sans:wght@400;600;700;800&family=Permanent+Marker&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: #cf1a4f #efe7d5;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
+}
+
+::-webkit-scrollbar-track {
+  background: #efe7d5;
+  border-left: 2px solid #000;
+  border-top: 2px solid #000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #ffd000 0%, #cf1a4f 100%);
+  border: 2px solid #000;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #ffe45a 0%, #bc002d 100%);
+}
+
+::-webkit-scrollbar-corner {
+  background: #efe7d5;
+}
+
+body {
+  position: relative;
+  overflow-x: hidden;
+  font-family: 'Nunito Sans', sans-serif;
+  color: #0e0e0e;
+  background:
+    linear-gradient(rgba(6, 8, 14, 0.38), rgba(6, 8, 14, 0.46)),
+    url('/images/bg_otakuversus.png') center/cover fixed no-repeat;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background:
+    radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.15) 1px, transparent 0),
+    repeating-linear-gradient(145deg, rgba(0, 0, 0, 0.22) 0 2px, transparent 2px 15px);
+  background-size: 16px 16px, 100% 100%;
+  opacity: 0.24;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Bangers', cursive;
+  letter-spacing: 0.06em;
+  font-weight: 400;
+  line-height: 0.92;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+@layer components {
+  .manga-page {
+    background: #f5f0e3;
+    border: 7px solid #000;
+    box-shadow: 14px 14px 0 #000;
+    padding: 0.95rem;
+  }
+
+  .manga-panel,
+  .glass-panel {
+    position: relative;
+    overflow: hidden;
+    border: 4px solid #000;
+    border-radius: 0;
+    background: linear-gradient(165deg, #f7f2e5 0%, #ece5d2 100%);
+    box-shadow: 6px 6px 0 #000;
+    isolation: isolate;
+    color: #121212;
+  }
+
+  .manga-panel::before,
+  .glass-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.08) 1px, transparent 0),
+      repeating-linear-gradient(160deg, rgba(0, 0, 0, 0.05) 0 2px, transparent 2px 14px);
+    background-size: 17px 17px, 100% 100%;
+    opacity: 0.2;
+  }
+
+  .manga-panel-lift {
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+  }
+
+  .manga-panel-lift:hover {
+    transform: translate(-2px, -3px);
+    box-shadow: 10px 10px 0 #000;
+  }
+
+  .manga-border,
+  .neon-border {
+    border: 4px solid #000;
+    box-shadow: 8px 8px 0 #000;
+  }
+
+  .comic-kicker {
+    display: inline-flex;
+    align-items: center;
+    border: 4px solid #000;
+    border-radius: 0;
+    padding: 0.24rem 0.95rem;
+    background: #ffd000;
+    color: #000;
+    box-shadow: 4px 4px 0 #000;
+    font-family: 'Permanent Marker', cursive;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+
+  .speech-bubble {
+    position: relative;
+    border: 4px solid #000;
+    border-radius: 0;
+    background: #fff;
+    color: #000;
+    box-shadow: 6px 6px 0 #000;
+    padding: 0.9rem 1rem;
+    font-weight: 800;
+  }
+
+  .speech-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -12px;
+    left: 16px;
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    border-right: 4px solid #000;
+    border-bottom: 4px solid #000;
+    transform: rotate(45deg);
+  }
+
+  .ink-stamp {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 4px dashed #000;
+    border-radius: 0;
+    padding: 0.2rem 0.72rem;
+    background: #ff335f;
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    transform: rotate(-4deg);
+  }
+
+  .impact-burst {
+    clip-path: polygon(50% 0%, 62% 16%, 81% 8%, 79% 29%, 100% 31%, 84% 47%, 100% 62%, 79% 65%, 83% 84%, 63% 79%, 58% 100%, 42% 82%, 23% 95%, 22% 74%, 3% 77%, 15% 59%, 0% 44%, 18% 39%, 9% 19%, 30% 21%, 33% 2%);
+  }
+
+  .panel-title {
+    color: #0c0c0c;
+    text-shadow: 2px 2px 0 rgba(255, 255, 255, 0.35);
+    -webkit-text-stroke: 1px rgba(0, 0, 0, 0.45);
+  }
+
+  .ink-link {
+    color: #cf1a4f;
+    text-decoration: underline;
+    text-decoration-thickness: 3px;
+    text-underline-offset: 3px;
+    font-weight: 800;
+  }
+
+  .ink-link:hover {
+    color: #000;
+  }
+
+  .manga-cut {
+    border-radius: 0;
+  }
+
+  .panel-divider {
+    height: 6px;
+    border-radius: 0;
+    background: repeating-linear-gradient(90deg, #000 0 18px, #ffd000 18px 36px, #ff335f 36px 54px);
+    box-shadow: 2px 2px 0 #000;
+  }
+
+  .comic-layout-asym {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+  }
+
+  .comic-gutters {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.9rem;
+  }
+
+  .comic-gutters > * + * {
+    position: relative;
+  }
+
+  .comic-gutters > * + *::before {
+    content: '';
+    position: absolute;
+    left: -0.2rem;
+    right: -0.2rem;
+    top: -0.56rem;
+    height: 6px;
+    background: #000;
+  }
+
+  .panel-overlap-up {
+    margin-top: -0.8rem;
+  }
+
+  .panel-overlap-right {
+    transform: translateX(0.2rem) rotate(0.8deg);
+  }
+
+  .panel-overlap-left {
+    transform: translateX(-0.2rem) rotate(-0.8deg);
+  }
+
+  .sfx-bam {
+    font-family: 'Bangers', cursive;
+    font-size: clamp(2rem, 6vw, 4.6rem);
+    letter-spacing: 0.08em;
+    color: #ffd000;
+    text-shadow: 3px 3px 0 #000;
+    -webkit-text-stroke: 2px #000;
+    line-height: 0.9;
+  }
+
+  .comic-bg-panel {
+    position: relative;
+    overflow: hidden;
+    border: 4px solid #000;
+    box-shadow: 6px 6px 0 #000;
+  }
+
+  .comic-bg-panel::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.35));
+  }
+
+  .hero-manga-gutters {
+    position: relative;
+  }
+
+  .hero-manga-gutters > * + *::before {
+    display: none !important;
+  }
+
+  @media (min-width: 1024px) {
+    .comic-layout-asym {
+      grid-template-columns: 1.3fr 0.95fr;
+    }
+
+    .comic-gutters {
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 1rem;
+    }
+
+    .comic-gutters > * + *::before {
+      top: 0;
+      bottom: 0;
+      width: 6px;
+      height: auto;
+      left: -0.56rem;
+      right: auto;
+    }
+
+    .panel-overlap-up {
+      margin-top: -1.25rem;
+    }
+
+    .panel-overlap-right {
+      transform: translateX(0.55rem) rotate(1deg);
+    }
+
+    .panel-overlap-left {
+      transform: translateX(-0.55rem) rotate(-1deg);
+    }
+
+    .hero-manga-gutters > * + *::before {
+      display: none !important;
+    }
+
+    .hero-manga-gutters::after {
+      display: none;
+    }
+  }
+}
