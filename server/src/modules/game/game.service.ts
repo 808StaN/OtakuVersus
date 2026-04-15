@@ -60,6 +60,11 @@ type AnimeMeta = {
   genres: string[];
 };
 
+type AnimeMetaCacheEntry = {
+  value: AnimeMeta | null;
+  expiresAt: number;
+};
+
 const GUEST_NICKNAME = 'Guest';
 const GUEST_PASSWORD_HASH = '__guest_account__';
 const MULTIPLAYER_ROUND_TIME_MS = 30_000;
@@ -67,7 +72,36 @@ const MULTIPLAYER_START_COUNTDOWN_MS = 3_000;
 const MIN_MULTIPLAYER_REMAINING_MS = 1_000;
 const ELO_DEFAULT = 1000;
 const ELO_K_FACTOR = 32;
-const animeMetaCache = new Map<string, AnimeMeta | null>();
+const ANIME_META_SUCCESS_TTL_MS = 1000 * 60 * 60 * 12;
+const ANIME_META_FAILURE_TTL_MS = 1000 * 60 * 3;
+const animeMetaCache = new Map<string, AnimeMetaCacheEntry>();
+
+const ANIME_META_FALLBACKS: Record<string, AnimeMeta> = {
+  'attack on titan': { year: 2013, genres: ['Action', 'Dark Fantasy', 'Drama', 'Shounen'] },
+  'code geass': { year: 2006, genres: ['Mecha', 'Sci-Fi', 'Drama', 'Action'] },
+  'violet evergarden': { year: 2018, genres: ['Drama', 'Fantasy', 'Slice of Life'] },
+  'your lie in april': { year: 2014, genres: ['Drama', 'Romance', 'Music', 'School'] },
+  'demon slayer': { year: 2019, genres: ['Action', 'Dark Fantasy', 'Shounen'] },
+  'hunter x hunter': { year: 2011, genres: ['Action', 'Adventure', 'Fantasy', 'Shounen'] },
+  'jujutsu kaisen': { year: 2020, genres: ['Action', 'Supernatural', 'Dark Fantasy', 'Shounen'] },
+  'haikyuu!!': { year: 2014, genres: ['Sports', 'School', 'Drama', 'Shounen'] },
+  naruto: { year: 2002, genres: ['Action', 'Adventure', 'Martial Arts', 'Shounen'] },
+  'spirited away': { year: 2001, genres: ['Fantasy', 'Adventure', 'Supernatural'] },
+  'my hero academia': { year: 2016, genres: ['Action', 'School', 'Superpower', 'Shounen'] },
+  'one piece': { year: 1999, genres: ['Action', 'Adventure', 'Fantasy', 'Shounen'] },
+  bleach: { year: 2004, genres: ['Action', 'Supernatural', 'Adventure', 'Shounen'] },
+  'death note': { year: 2006, genres: ['Mystery', 'Psychological', 'Thriller', 'Supernatural'] },
+  'dragon ball z': { year: 1989, genres: ['Action', 'Adventure', 'Martial Arts', 'Shounen'] },
+  'blue lock': { year: 2022, genres: ['Sports', 'Drama', 'Shounen'] },
+  'spy x family': { year: 2022, genres: ['Action', 'Comedy', 'Slice of Life', 'Shounen'] },
+  'vinland saga': { year: 2019, genres: ['Action', 'Historical', 'Drama', 'Seinen'] },
+  'chainsaw man': { year: 2022, genres: ['Action', 'Supernatural', 'Horror', 'Shounen'] },
+  'solo leveling': { year: 2024, genres: ['Action', 'Fantasy', 'Adventure'] }
+};
+
+function getFallbackAnimeMeta(normalizedTitle: string): AnimeMeta | null {
+  return ANIME_META_FALLBACKS[normalizedTitle] ?? null;
+}
 const multiplayerMatches = new Map<string, MultiplayerMatchState>();
 const sessionToMatchId = new Map<string, string>();
 const multiplayerQueue: Array<{
@@ -415,8 +449,10 @@ function parseSceneImages(imageUrl: string) {
 
 async function getAnimeMeta(animeTitle: string): Promise<AnimeMeta | null> {
   const key = animeTitle.trim().toLowerCase();
-  if (animeMetaCache.has(key)) {
-    return animeMetaCache.get(key) ?? null;
+  const fallbackMeta = getFallbackAnimeMeta(key);
+  const cached = animeMetaCache.get(key);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.value;
   }
 
   try {
@@ -425,8 +461,11 @@ async function getAnimeMeta(animeTitle: string): Promise<AnimeMeta | null> {
     );
 
     if (!response.ok) {
-      animeMetaCache.set(key, null);
-      return null;
+      animeMetaCache.set(key, {
+        value: fallbackMeta,
+        expiresAt: Date.now() + (fallbackMeta ? ANIME_META_SUCCESS_TTL_MS : ANIME_META_FAILURE_TTL_MS)
+      });
+      return fallbackMeta;
     }
 
     const payload = (await response.json()) as {
@@ -441,8 +480,11 @@ async function getAnimeMeta(animeTitle: string): Promise<AnimeMeta | null> {
 
     const first = payload.data?.[0];
     if (!first) {
-      animeMetaCache.set(key, null);
-      return null;
+      animeMetaCache.set(key, {
+        value: fallbackMeta,
+        expiresAt: Date.now() + (fallbackMeta ? ANIME_META_SUCCESS_TTL_MS : ANIME_META_FAILURE_TTL_MS)
+      });
+      return fallbackMeta;
     }
 
     const parsedYear =
@@ -455,18 +497,25 @@ async function getAnimeMeta(animeTitle: string): Promise<AnimeMeta | null> {
       .map((item) => item.name?.trim() ?? '')
       .filter(Boolean);
 
-    const uniqueTags = [...new Set(tags)].slice(0, 4);
+    const fallbackTags = fallbackMeta?.genres ?? [];
+    const uniqueTags = [...new Set([...tags, ...fallbackTags])].slice(0, 4);
 
     const meta: AnimeMeta = {
-      year: Number.isFinite(parsedYear as number) ? (parsedYear as number) : null,
+      year: Number.isFinite(parsedYear as number) ? (parsedYear as number) : (fallbackMeta?.year ?? null),
       genres: uniqueTags
     };
 
-    animeMetaCache.set(key, meta);
+    animeMetaCache.set(key, {
+      value: meta,
+      expiresAt: Date.now() + ANIME_META_SUCCESS_TTL_MS
+    });
     return meta;
   } catch (_error) {
-    animeMetaCache.set(key, null);
-    return null;
+    animeMetaCache.set(key, {
+      value: fallbackMeta,
+      expiresAt: Date.now() + (fallbackMeta ? ANIME_META_SUCCESS_TTL_MS : ANIME_META_FAILURE_TTL_MS)
+    });
+    return fallbackMeta;
   }
 }
 

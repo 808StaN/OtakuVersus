@@ -34,7 +34,7 @@ export function Button({
   return (
     <button
       className={cn(
-        'relative isolate inline-flex items-center justify-center overflow-hidden border-[4px] font-extrabold uppercase tracking-wide shadow-panel transition duration-150 before:absolute before:inset-0 before:bg-speedlines before:opacity-20 before:mix-blend-multiply hover:-translate-x-[1px] hover:-translate-y-[3px] hover:shadow-panel-hover active:translate-y-[1px] active:shadow-panel focus:outline-none focus:ring-2 focus:ring-[#ffd000]/60 disabled:cursor-not-allowed disabled:opacity-60',
+        'relative isolate inline-flex items-center justify-center overflow-hidden border-[4px] font-extrabold uppercase tracking-wide shadow-panel transition duration-150 before:absolute before:inset-0 before:bg-speedlines before:opacity-20 before:mix-blend-multiply hover:-translate-x-[1px] hover:-translate-y-[3px] hover:shadow-panel-hover active:translate-y-[1px] active:shadow-panel focus:outline-none disabled:cursor-not-allowed disabled:opacity-60',
         variantClasses[variant],
         sizeClasses[size],
         className

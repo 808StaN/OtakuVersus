@@ -7,6 +7,7 @@ import { useEloLeaderboardQuery, useLeaderboardQuery } from '../features/leaderb
 import { useStartGameMutation } from '../features/game/use-game';
 import { Card } from '../components/ui/card';
 import { LoadingSpinner } from '../components/ui/loading-spinner';
+import { Button } from '../components/ui/button';
 
 export function LandingPage() {
   const { isAuthenticated } = useAuth();
@@ -50,24 +51,22 @@ export function LandingPage() {
             <span className="ink-stamp">Live</span>
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
-            <button
+            <Button
               type="button"
+              variant={rankingView === 'single' ? 'primary' : 'secondary'}
               onClick={() => setRankingView('single')}
-              className={`border-[3px] border-black px-3 py-1 text-xs font-black uppercase tracking-[0.12em] shadow-sticker transition ${
-                rankingView === 'single' ? 'bg-[#ffd000] text-black' : 'bg-[#fffdf7] text-base-ink'
-              }`}
+              className="px-3 py-1 text-xs focus:ring-0 focus:ring-offset-0"
             >
               Singleplayer
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant={rankingView === 'elo' ? 'primary' : 'secondary'}
               onClick={() => setRankingView('elo')}
-              className={`border-[3px] border-black px-3 py-1 text-xs font-black uppercase tracking-[0.12em] shadow-sticker transition ${
-                rankingView === 'elo' ? 'bg-[#ffd000] text-black' : 'bg-[#fffdf7] text-base-ink'
-              }`}
+              className="px-3 py-1 text-xs focus:ring-0 focus:ring-offset-0"
             >
               Multiplayer
-            </button>
+            </Button>
           </div>
           <div className="mt-3 overflow-hidden border-[4px] border-black bg-[#f8f3e6] shadow-sticker">
             {(rankingView === 'single' ? singleLeaderboardQuery.isLoading : eloLeaderboardQuery.isLoading) ? (
@@ -76,8 +75,8 @@ export function LandingPage() {
               <LeaderboardTable
                 rows={
                   rankingView === 'single'
-                    ? singleLeaderboardQuery.data?.leaderboard ?? []
-                    : eloLeaderboardQuery.data?.leaderboard ?? []
+                    ? (singleLeaderboardQuery.data?.leaderboard ?? []).slice(0, 5)
+                    : (eloLeaderboardQuery.data?.leaderboard ?? []).slice(0, 5)
                 }
                 rankingType={rankingView}
                 embedded

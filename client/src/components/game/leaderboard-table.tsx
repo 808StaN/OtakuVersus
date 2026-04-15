@@ -3,9 +3,13 @@ import { Card } from '../ui/card';
 
 function formatDate(value: string | null) {
   if (!value) return '-';
-  return new Intl.DateTimeFormat('pl-PL', {
-    dateStyle: 'medium',
-    timeStyle: 'short'
+  return new Intl.DateTimeFormat('en-GB', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
   }).format(new Date(value));
 }
 
@@ -23,7 +27,7 @@ export function LeaderboardTable({
   const singleRows = rankingType === 'single' ? (rows as LeaderboardRow[]) : [];
   const eloRows = rankingType === 'elo' ? (rows as EloLeaderboardRow[]) : [];
   const table = (
-    <div className="overflow-x-auto">
+    <div className="w-full overflow-x-auto">
       <table className="min-w-full text-left text-sm text-base-ink/90">
           <thead className="bg-[#ffd000] text-xs uppercase tracking-[0.18em] text-black">
             <tr>
@@ -87,5 +91,5 @@ export function LeaderboardTable({
     return table;
   }
 
-  return <Card className="overflow-hidden p-0">{table}</Card>;
+  return <Card className="overflow-hidden !p-0">{table}</Card>;
 }
