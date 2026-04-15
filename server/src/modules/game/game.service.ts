@@ -60,6 +60,11 @@ type AnimeMeta = {
   genres: string[];
 };
 
+type AnimeMetaCacheEntry = {
+  value: AnimeMeta | null;
+  expiresAt: number;
+};
+
 const GUEST_NICKNAME = 'Guest';
 const GUEST_PASSWORD_HASH = '__guest_account__';
 const MULTIPLAYER_ROUND_TIME_MS = 30_000;
@@ -67,7 +72,9 @@ const MULTIPLAYER_START_COUNTDOWN_MS = 3_000;
 const MIN_MULTIPLAYER_REMAINING_MS = 1_000;
 const ELO_DEFAULT = 1000;
 const ELO_K_FACTOR = 32;
-const animeMetaCache = new Map<string, AnimeMeta | null>();
+const ANIME_META_SUCCESS_TTL_MS = 1000 * 60 * 60 * 12;
+const ANIME_META_FAILURE_TTL_MS = 1000 * 60 * 3;
+const animeMetaCache = new Map<string, AnimeMetaCacheEntry>();
 const multiplayerMatches = new Map<string, MultiplayerMatchState>();
 const sessionToMatchId = new Map<string, string>();
 const multiplayerQueue: Array<{
@@ -415,8 +422,9 @@ function parseSceneImages(imageUrl: string) {
 
 async function getAnimeMeta(animeTitle: string): Promise<AnimeMeta | null> {
   const key = animeTitle.trim().toLowerCase();
-  if (animeMetaCache.has(key)) {
-    return animeMetaCache.get(key) ?? null;
+  const cached = animeMetaCache.get(key);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.value;
   }
 
   try {
@@ -425,7 +433,10 @@ async function getAnimeMeta(animeTitle: string): Promise<AnimeMeta | null> {
     );
 
     if (!response.ok) {
-      animeMetaCache.set(key, null);
+      animeMetaCache.set(key, {
+        value: null,
+        expiresAt: Date.now() + ANIME_META_FAILURE_TTL_MS
+      });
       return null;
     }
 
@@ -441,7 +452,10 @@ async function getAnimeMeta(animeTitle: string): Promise<AnimeMeta | null> {
 
     const first = payload.data?.[0];
     if (!first) {
-      animeMetaCache.set(key, null);
+      animeMetaCache.set(key, {
+        value: null,
+        expiresAt: Date.now() + ANIME_META_FAILURE_TTL_MS
+      });
       return null;
     }
 
@@ -462,10 +476,16 @@ async function getAnimeMeta(animeTitle: string): Promise<AnimeMeta | null> {
       genres: uniqueTags
     };
 
-    animeMetaCache.set(key, meta);
+    animeMetaCache.set(key, {
+      value: meta,
+      expiresAt: Date.now() + ANIME_META_SUCCESS_TTL_MS
+    });
     return meta;
   } catch (_error) {
-    animeMetaCache.set(key, null);
+    animeMetaCache.set(key, {
+      value: null,
+      expiresAt: Date.now() + ANIME_META_FAILURE_TTL_MS
+    });
     return null;
   }
 }
