@@ -23,7 +23,7 @@ export function LeaderboardTable({
   const singleRows = rankingType === 'single' ? (rows as LeaderboardRow[]) : [];
   const eloRows = rankingType === 'elo' ? (rows as EloLeaderboardRow[]) : [];
   const table = (
-    <div className="overflow-x-auto">
+    <div className="w-full overflow-x-auto">
       <table className="min-w-full text-left text-sm text-base-ink/90">
           <thead className="bg-[#ffd000] text-xs uppercase tracking-[0.18em] text-black">
             <tr>
@@ -87,5 +87,5 @@ export function LeaderboardTable({
     return table;
   }
 
-  return <Card className="overflow-hidden p-0">{table}</Card>;
+  return <Card className="overflow-hidden !p-0">{table}</Card>;
 }
