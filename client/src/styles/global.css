@@ -110,6 +110,22 @@ a {
   text-decoration: none;
 }
 
+button,
+a,
+[role='button'] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus,
+button:focus-visible,
+a:focus,
+a:focus-visible,
+[role='button']:focus,
+[role='button']:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
 #root {
   min-height: 100vh;
 }
