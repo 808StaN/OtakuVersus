@@ -47,25 +47,25 @@ Players analyze anime-inspired scene frames and type the anime title.
 ## Tech Stack
 
 ### Frontend
-- React 19
-- TypeScript
-- Vite
-- Tailwind CSS
-- React Router
-- TanStack Query
+- ⚛️ React 19
+- 🔷 TypeScript
+- ⚡ Vite
+- 🎨 Tailwind CSS
+- 🧭 React Router
+- 📦 TanStack Query
 
 ### Backend
-- Node.js
-- Express
-- TypeScript
-- Prisma ORM
-- PostgreSQL
+- 🟢 Node.js
+- 🚏 Express
+- 🔷 TypeScript
+- 🔺 Prisma ORM
+- 🐘 PostgreSQL
 
 ### Additional
-- JWT auth
-- Storage abstraction layer (`noop` / Cloudinary / Supabase Storage)
-- Frontend deploy-ready for Vercel
-- Backend deploy-ready for Railway/Render
+- 🔐 JWT auth
+- 🗂️ Storage abstraction layer (`noop` / Cloudinary / Supabase Storage)
+- ▲ Frontend deploy-ready for Vercel
+- 🚄 Backend deploy-ready for Railway/Render
 
 ---
 
