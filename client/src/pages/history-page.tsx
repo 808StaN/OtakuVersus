@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Button } from '../components/ui/button';
-import { Card } from '../components/ui/card';
 import { EmptyState } from '../components/ui/empty-state';
 import { ErrorState } from '../components/ui/error-state';
 import { LoadingSpinner } from '../components/ui/loading-spinner';
@@ -31,30 +30,32 @@ export function HistoryPage() {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <div className="flex items-center justify-between gap-3">
-          <h1 className="panel-title text-5xl">Matches History</h1>
-          <span className="ink-stamp">Archive</span>
-        </div>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="panel-title text-5xl">Matches History</h1>
+        <span className="ink-stamp">Archive</span>
+      </div>
 
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Button
-            type="button"
-            onClick={() => setMode('SINGLEPLAYER')}
-            className={mode === 'SINGLEPLAYER' ? '' : 'bg-[#fffdf7] text-base-ink'}
-          >
-            Singleplayer
-          </Button>
-          <Button
-            type="button"
-            onClick={() => setMode('MULTIPLAYER')}
-            className={mode === 'MULTIPLAYER' ? '' : 'bg-[#fffdf7] text-base-ink'}
-          >
-            Multiplayer
-          </Button>
-        </div>
+      <div className="flex flex-wrap gap-2">
+        <Button
+          type="button"
+          variant={mode === 'SINGLEPLAYER' ? 'primary' : 'secondary'}
+          onClick={() => setMode('SINGLEPLAYER')}
+          className="focus:ring-0 focus:ring-offset-0"
+        >
+          Singleplayer
+        </Button>
+        <Button
+          type="button"
+          variant={mode === 'MULTIPLAYER' ? 'primary' : 'secondary'}
+          onClick={() => setMode('MULTIPLAYER')}
+          className="focus:ring-0 focus:ring-offset-0"
+        >
+          Multiplayer
+        </Button>
+      </div>
 
-        <div className="mt-4 overflow-x-auto">
+      <div className="overflow-hidden border-[4px] border-black bg-[#f8f3e6] shadow-sticker">
+        <div className="overflow-x-auto">
           <table className="min-w-full text-left text-sm text-base-ink/90">
             <thead className="bg-[#ffd000] text-xs uppercase tracking-[0.15em] text-black">
               <tr>
@@ -67,7 +68,10 @@ export function HistoryPage() {
             </thead>
             <tbody>
               {filteredHistory.map((item) => (
-                <tr key={item.sessionId} className="border-t-[4px] border-black/70 odd:bg-black/5 even:bg-black/10">
+                <tr
+                  key={item.sessionId}
+                  className="border-t-[4px] border-black/70 odd:bg-black/5 even:bg-black/10 transition-colors duration-150 hover:bg-black/15"
+                >
                   <td className="px-3 py-2 text-base-ink/75">
                     {new Intl.DateTimeFormat('pl-PL', {
                       dateStyle: 'medium',
@@ -90,7 +94,7 @@ export function HistoryPage() {
             </tbody>
           </table>
         </div>
-      </Card>
+      </div>
     </div>
   );
 }

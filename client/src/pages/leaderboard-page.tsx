@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { LeaderboardTable } from "../components/game/leaderboard-table";
 import { Card } from "../components/ui/card";
+import { Button } from "../components/ui/button";
 import { ErrorState } from "../components/ui/error-state";
 import { LoadingSpinner } from "../components/ui/loading-spinner";
 import { useAuth } from "../features/auth/auth-context";
@@ -120,28 +121,22 @@ export function LeaderboardPage() {
               : "Multiplayer Leaderboard"}
           </h1>
           <div className="mt-4 flex flex-wrap gap-2">
-            <button
+            <Button
               type="button"
+              variant={rankingView === "single" ? "primary" : "secondary"}
               onClick={() => setRankingView("single")}
-              className={`border-[3px] border-black px-3 py-1 text-xs font-black uppercase tracking-[0.12em] shadow-sticker transition ${
-                rankingView === "single"
-                  ? "bg-[#ffd000] text-black"
-                  : "bg-[#fffdf7] text-base-ink"
-              }`}
+              className="px-3 py-1 text-xs focus:ring-0 focus:ring-offset-0"
             >
               Singleplayer
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant={rankingView === "elo" ? "primary" : "secondary"}
               onClick={() => setRankingView("elo")}
-              className={`border-[3px] border-black px-3 py-1 text-xs font-black uppercase tracking-[0.12em] shadow-sticker transition ${
-                rankingView === "elo"
-                  ? "bg-[#ffd000] text-black"
-                  : "bg-[#fffdf7] text-base-ink"
-              }`}
+              className="px-3 py-1 text-xs focus:ring-0 focus:ring-offset-0"
             >
               Multiplayer
-            </button>
+            </Button>
           </div>
           <div className="mt-4 max-w-2xl border-[4px] border-black bg-[#fffdf7] px-4 py-3 text-base font-bold text-base-ink shadow-sticker">
             {rankingView === "single"
