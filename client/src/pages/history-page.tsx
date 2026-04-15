@@ -54,7 +54,7 @@ export function HistoryPage() {
         </Button>
       </div>
 
-      <div className="overflow-hidden border-[4px] border-black bg-[#f8f3e6] shadow-sticker">
+      <div className="manga-panel-lift overflow-hidden border-[4px] border-black bg-[#f8f3e6] shadow-sticker">
         <div className="overflow-x-auto">
           <table className="min-w-full text-left text-sm text-base-ink/90">
             <thead className="bg-[#ffd000] text-xs uppercase tracking-[0.15em] text-black">
@@ -68,10 +68,7 @@ export function HistoryPage() {
             </thead>
             <tbody>
               {filteredHistory.map((item) => (
-                <tr
-                  key={item.sessionId}
-                  className="border-t-[4px] border-black/70 odd:bg-black/5 even:bg-black/10 transition-transform duration-150 hover:scale-[1.01]"
-                >
+                <tr key={item.sessionId} className="border-t-[4px] border-black/70 odd:bg-black/5 even:bg-black/10">
                   <td className="px-3 py-2 text-base-ink/75">
                     {new Intl.DateTimeFormat('pl-PL', {
                       dateStyle: 'medium',
