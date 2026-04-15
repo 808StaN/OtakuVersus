@@ -37,8 +37,8 @@ Players analyze anime-inspired scene frames and type the anime title.
 - ✅ Result comparison vs opponent
 - ✅ ELO ranking for multiplayer accounts
 - ✅ Separate leaderboards:
-  - Singleplayer score leaderboard
-  - Multiplayer ELO leaderboard
+  - ✅ Singleplayer score leaderboard
+  - ✅ Multiplayer ELO leaderboard
 - ✅ User match history with mode filtering
 - ✅ Anime titles and scenes seeded into PostgreSQL via Prisma
 
@@ -227,3 +227,4 @@ In PR description include:
 
 This project is proprietary and licensed as **All Rights Reserved**.  
 Commercial use is not permitted without explicit written permission.
+
