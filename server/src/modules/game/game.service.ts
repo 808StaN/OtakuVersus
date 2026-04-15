@@ -72,36 +72,10 @@ const MULTIPLAYER_START_COUNTDOWN_MS = 3_000;
 const MIN_MULTIPLAYER_REMAINING_MS = 1_000;
 const ELO_DEFAULT = 1000;
 const ELO_K_FACTOR = 32;
-const ANIME_META_SUCCESS_TTL_MS = 1000 * 60 * 60 * 12;
-const ANIME_META_FAILURE_TTL_MS = 1000 * 60 * 3;
+const ANIME_META_SUCCESS_TTL_MS = Number.POSITIVE_INFINITY;
+const ANIME_META_FAILURE_TTL_MS = 1000 * 60;
 const animeMetaCache = new Map<string, AnimeMetaCacheEntry>();
-
-const ANIME_META_FALLBACKS: Record<string, AnimeMeta> = {
-  'attack on titan': { year: 2013, genres: ['Action', 'Dark Fantasy', 'Drama', 'Shounen'] },
-  'code geass': { year: 2006, genres: ['Mecha', 'Sci-Fi', 'Drama', 'Action'] },
-  'violet evergarden': { year: 2018, genres: ['Drama', 'Fantasy', 'Slice of Life'] },
-  'your lie in april': { year: 2014, genres: ['Drama', 'Romance', 'Music', 'School'] },
-  'demon slayer': { year: 2019, genres: ['Action', 'Dark Fantasy', 'Shounen'] },
-  'hunter x hunter': { year: 2011, genres: ['Action', 'Adventure', 'Fantasy', 'Shounen'] },
-  'jujutsu kaisen': { year: 2020, genres: ['Action', 'Supernatural', 'Dark Fantasy', 'Shounen'] },
-  'haikyuu!!': { year: 2014, genres: ['Sports', 'School', 'Drama', 'Shounen'] },
-  naruto: { year: 2002, genres: ['Action', 'Adventure', 'Martial Arts', 'Shounen'] },
-  'spirited away': { year: 2001, genres: ['Fantasy', 'Adventure', 'Supernatural'] },
-  'my hero academia': { year: 2016, genres: ['Action', 'School', 'Superpower', 'Shounen'] },
-  'one piece': { year: 1999, genres: ['Action', 'Adventure', 'Fantasy', 'Shounen'] },
-  bleach: { year: 2004, genres: ['Action', 'Supernatural', 'Adventure', 'Shounen'] },
-  'death note': { year: 2006, genres: ['Mystery', 'Psychological', 'Thriller', 'Supernatural'] },
-  'dragon ball z': { year: 1989, genres: ['Action', 'Adventure', 'Martial Arts', 'Shounen'] },
-  'blue lock': { year: 2022, genres: ['Sports', 'Drama', 'Shounen'] },
-  'spy x family': { year: 2022, genres: ['Action', 'Comedy', 'Slice of Life', 'Shounen'] },
-  'vinland saga': { year: 2019, genres: ['Action', 'Historical', 'Drama', 'Seinen'] },
-  'chainsaw man': { year: 2022, genres: ['Action', 'Supernatural', 'Horror', 'Shounen'] },
-  'solo leveling': { year: 2024, genres: ['Action', 'Fantasy', 'Adventure'] }
-};
-
-function getFallbackAnimeMeta(normalizedTitle: string): AnimeMeta | null {
-  return ANIME_META_FALLBACKS[normalizedTitle] ?? null;
-}
+const animeMetaInFlight = new Map<string, Promise<AnimeMeta | null>>();
 const multiplayerMatches = new Map<string, MultiplayerMatchState>();
 const sessionToMatchId = new Map<string, string>();
 const multiplayerQueue: Array<{
@@ -447,76 +421,144 @@ function parseSceneImages(imageUrl: string) {
   return parts.length > 0 ? parts : [imageUrl];
 }
 
+function buildAnimeMetaFromRaw(year: number | null, tags: string[]) {
+  return {
+    year: typeof year === 'number' && Number.isFinite(year) ? year : null,
+    genres: [...new Set(tags.map((item) => item.trim()).filter(Boolean))].slice(0, 4)
+  } satisfies AnimeMeta;
+}
+
+async function fetchAnimeMetaFromAniList(animeTitle: string): Promise<AnimeMeta | null> {
+  const query = `
+    query ($search: String) {
+      Media(search: $search, type: ANIME) {
+        startDate { year }
+        seasonYear
+        genres
+        tags {
+          name
+          rank
+          isMediaSpoiler
+        }
+      }
+    }
+  `;
+
+  const response = await fetch('https://graphql.anilist.co', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json'
+    },
+    body: JSON.stringify({
+      query,
+      variables: { search: animeTitle }
+    })
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const payload = (await response.json()) as {
+    data?: {
+      Media?: {
+        startDate?: { year?: number | null };
+        seasonYear?: number | null;
+        genres?: string[];
+        tags?: Array<{ name?: string | null; rank?: number | null; isMediaSpoiler?: boolean | null }>;
+      } | null;
+    };
+  };
+
+  const media = payload.data?.Media;
+  if (!media) return null;
+
+  const tagNames = (media.tags ?? [])
+    .filter((tag) => !tag.isMediaSpoiler)
+    .sort((a, b) => (b.rank ?? 0) - (a.rank ?? 0))
+    .map((tag) => tag.name ?? '')
+    .filter(Boolean);
+  const genres = (media.genres ?? []).filter(Boolean);
+  const year = media.startDate?.year ?? media.seasonYear ?? null;
+
+  const meta = buildAnimeMetaFromRaw(year, [...genres, ...tagNames]);
+  return meta.genres.length > 0 || meta.year ? meta : null;
+}
+
+async function fetchAnimeMetaFromJikan(animeTitle: string): Promise<AnimeMeta | null> {
+  const response = await fetch(
+    `https://api.jikan.moe/v4/anime?q=${encodeURIComponent(animeTitle)}&limit=1&sfw=true`
+  );
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const payload = (await response.json()) as {
+    data?: Array<{
+      year?: number | null;
+      aired?: { from?: string | null };
+      genres?: Array<{ name?: string | null }>;
+      themes?: Array<{ name?: string | null }>;
+      demographics?: Array<{ name?: string | null }>;
+    }>;
+  };
+
+  const first = payload.data?.[0];
+  if (!first) {
+    return null;
+  }
+
+  const parsedYear =
+    first.year ??
+    (first.aired?.from
+      ? Number(first.aired.from.slice(0, 4))
+      : null);
+
+  const tags = [...(first.genres ?? []), ...(first.themes ?? []), ...(first.demographics ?? [])]
+    .map((item) => item.name?.trim() ?? '')
+    .filter(Boolean);
+
+  const meta = buildAnimeMetaFromRaw(Number.isFinite(parsedYear as number) ? (parsedYear as number) : null, tags);
+  return meta.genres.length > 0 || meta.year ? meta : null;
+}
+
 async function getAnimeMeta(animeTitle: string): Promise<AnimeMeta | null> {
   const key = animeTitle.trim().toLowerCase();
-  const fallbackMeta = getFallbackAnimeMeta(key);
   const cached = animeMetaCache.get(key);
   if (cached && cached.expiresAt > Date.now()) {
     return cached.value;
   }
 
-  try {
-    const response = await fetch(
-      `https://api.jikan.moe/v4/anime?q=${encodeURIComponent(animeTitle)}&limit=1&sfw=true`
-    );
-
-    if (!response.ok) {
-      animeMetaCache.set(key, {
-        value: fallbackMeta,
-        expiresAt: Date.now() + (fallbackMeta ? ANIME_META_SUCCESS_TTL_MS : ANIME_META_FAILURE_TTL_MS)
-      });
-      return fallbackMeta;
-    }
-
-    const payload = (await response.json()) as {
-      data?: Array<{
-        year?: number | null;
-        aired?: { from?: string | null };
-        genres?: Array<{ name?: string | null }>;
-        themes?: Array<{ name?: string | null }>;
-        demographics?: Array<{ name?: string | null }>;
-      }>;
-    };
-
-    const first = payload.data?.[0];
-    if (!first) {
-      animeMetaCache.set(key, {
-        value: fallbackMeta,
-        expiresAt: Date.now() + (fallbackMeta ? ANIME_META_SUCCESS_TTL_MS : ANIME_META_FAILURE_TTL_MS)
-      });
-      return fallbackMeta;
-    }
-
-    const parsedYear =
-      first.year ??
-      (first.aired?.from
-        ? Number(first.aired.from.slice(0, 4))
-        : null);
-
-    const tags = [...(first.genres ?? []), ...(first.themes ?? []), ...(first.demographics ?? [])]
-      .map((item) => item.name?.trim() ?? '')
-      .filter(Boolean);
-
-    const fallbackTags = fallbackMeta?.genres ?? [];
-    const uniqueTags = [...new Set([...tags, ...fallbackTags])].slice(0, 4);
-
-    const meta: AnimeMeta = {
-      year: Number.isFinite(parsedYear as number) ? (parsedYear as number) : (fallbackMeta?.year ?? null),
-      genres: uniqueTags
-    };
-
-    animeMetaCache.set(key, {
-      value: meta,
-      expiresAt: Date.now() + ANIME_META_SUCCESS_TTL_MS
-    });
-    return meta;
-  } catch (_error) {
-    animeMetaCache.set(key, {
-      value: fallbackMeta,
-      expiresAt: Date.now() + (fallbackMeta ? ANIME_META_SUCCESS_TTL_MS : ANIME_META_FAILURE_TTL_MS)
-    });
-    return fallbackMeta;
+  const inFlight = animeMetaInFlight.get(key);
+  if (inFlight) {
+    return inFlight;
   }
+
+  const request = (async (): Promise<AnimeMeta | null> => {
+    try {
+      const meta = (await fetchAnimeMetaFromAniList(animeTitle)) ?? (await fetchAnimeMetaFromJikan(animeTitle));
+
+      animeMetaCache.set(key, {
+        value: meta,
+        expiresAt: Date.now() + (meta ? ANIME_META_SUCCESS_TTL_MS : ANIME_META_FAILURE_TTL_MS)
+      });
+
+      return meta;
+    } catch (_error) {
+      animeMetaCache.set(key, {
+        value: null,
+        expiresAt: Date.now() + ANIME_META_FAILURE_TTL_MS
+      });
+      return null;
+    } finally {
+      animeMetaInFlight.delete(key);
+    }
+  })();
+
+  animeMetaInFlight.set(key, request);
+  return request;
 }
 
 async function buildPublicRound(round: {
