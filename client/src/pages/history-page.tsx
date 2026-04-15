@@ -70,7 +70,7 @@ export function HistoryPage() {
               {filteredHistory.map((item) => (
                 <tr
                   key={item.sessionId}
-                  className="border-t-[4px] border-black/70 odd:bg-black/5 even:bg-black/10 transition-colors duration-150 hover:bg-black/15"
+                  className="border-t-[4px] border-black/70 odd:bg-black/5 even:bg-black/10 transition-transform duration-150 hover:scale-[1.01]"
                 >
                   <td className="px-3 py-2 text-base-ink/75">
                     {new Intl.DateTimeFormat('pl-PL', {
