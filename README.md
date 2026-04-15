@@ -11,27 +11,38 @@
 OtakuVersus is a fullstack anime guessing game inspired by GeoGuessr.  
 Players analyze anime-inspired scene frames and type the anime title.
 
-The project is structured as a complete, production-style app with:
-- production-style folder structure,
-- auth + game loop + rankings,
-- singleplayer and multiplayer modes,
-- ELO system for multiplayer,
-- reusable UI components and responsive manga-styled interface.
+![Front page preview](docs/readme-images/front_page.png)
+
+---
+
+## Table of Contents
+- [Core Features](#core-features)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Product Highlights](#product-highlights)
+- [Technical Decisions](#technical-decisions)
+- [How to Add Anime (Contributor Workflow)](#how-to-add-anime-contributor-workflow)
+- [Architecture Notes](#architecture-notes)
+- [Roadmap](#roadmap)
+
+---
 
 ## Core Features
 
-- JWT authentication (register, login, current user)
-- Guest play support (no account required)
-- Singleplayer sessions (score-based)
-- Multiplayer matchmaking with shared rounds
-- Pre-match countdown and synchronized round timer
-- Result comparison vs opponent
-- ELO ranking for multiplayer accounts
-- Separate leaderboards:
+- ✅ JWT authentication (register, login, current user)
+- ✅ Guest play support (no account required)
+- ✅ Singleplayer sessions (score-based)
+- ✅ Multiplayer matchmaking with shared rounds
+- ✅ Pre-match countdown and synchronized round timer
+- ✅ Result comparison vs opponent
+- ✅ ELO ranking for multiplayer accounts
+- ✅ Separate leaderboards:
   - Singleplayer score leaderboard
   - Multiplayer ELO leaderboard
-- User match history with mode filtering
-- Anime titles and scenes seeded into PostgreSQL via Prisma
+- ✅ User match history with mode filtering
+- ✅ Anime titles and scenes seeded into PostgreSQL via Prisma
+
+---
 
 ## Tech Stack
 
@@ -55,6 +66,8 @@ The project is structured as a complete, production-style app with:
 - Storage abstraction layer (`noop` / Cloudinary / Supabase Storage)
 - Frontend deploy-ready for Vercel
 - Backend deploy-ready for Railway/Render
+
+---
 
 ## Project Structure
 
@@ -108,154 +121,85 @@ OtakuVersus/
   README.md
 ```
 
-## Data Model (Prisma)
+---
 
-Main models:
-- `User`
-- `GameSession`
-- `Round`
-- `Guess`
-- `AnimeTitle`
-- `Scene`
+## Product Highlights
 
-Key enums:
-- `GameSessionStatus` (`ACTIVE`, `FINISHED`)
-- `DifficultyLevel` (`EASY`, `MEDIUM`, `HARD`)
-- `GameMode` (`SINGLEPLAYER`, `MULTIPLAYER`)
+- 🎮 End-to-end gameplay loop with persisted sessions and post-match breakdown.
+- 🏆 Two ranking systems: score-based singleplayer and ELO-based multiplayer.
+- 👤 Guest flow and authenticated flow coexisting in one codebase.
+- 🧠 Server-authoritative multiplayer scoring and ELO calculation.
+- 🎨 Manga-styled UI system kept consistent across pages and game states.
 
-## API Endpoints
+---
 
-Base path: `/api`
+## Technical Decisions
 
-### Health
-- `GET /health`
+- 🧩 Domain-oriented backend modules (`auth`, `game`, `leaderboard`, `users`, `anime-scenes`) for maintainability.
+- 🗃 Prisma + PostgreSQL with migrations and seed data to keep schema/content reproducible.
+- ⚡ TanStack Query for predictable async state, caching, and refetch patterns.
+- 🧠 In-memory caching for external anime metadata to reduce API calls and improve response time.
+- 🧱 Reusable UI primitives (`Button`, `Card`, `Modal`, `Loading`) to avoid style drift.
 
-### Auth
-- `POST /auth/register`
-- `POST /auth/login`
-- `GET /auth/me`
+---
 
-### Game
-- `POST /game/start`
-- `GET /game/session/:id`
-- `POST /game/session/:id/answer`
-- `POST /game/session/:id/finish`
+## How to Add Anime (Contributor Workflow)
 
-### Multiplayer
-- `POST /game/multiplayer/queue/join`
-- `GET /game/multiplayer/queue/:ticketId`
-- `GET /game/multiplayer/session/:id/status`
-- `GET /game/multiplayer/session/:id/result`
-- `GET /game/multiplayer/session/:id/round/:roundOrder/result`
+This section describes how to add new anime content as part of an official release contribution.
 
-### Leaderboards
-- `GET /leaderboard` (singleplayer score ranking)
-- `GET /leaderboard/elo` (multiplayer ELO ranking)
+### 1. Add scene assets
+Put exactly 3 images per anime in:
+- `client/public/images/scenes`
 
-### User
-- `GET /users/me/history`
+Use naming:
+- `<Anime Title>_1.png`
+- `<Anime Title>_2.png`
+- `<Anime Title>_3.png`
 
-### Scene/Metadata
-- `GET /scenes/categories`
-- `GET /scenes/difficulties`
-- `GET /scenes/titles`
+Supported extensions: `.png`, `.jpg`, `.jpeg`, `.webp`.
 
-## Local Setup
+### 2. Update seed source of truth
+Edit:
+- `server/prisma/seed.ts`
 
-## 1. Requirements
-- Node.js 20+
-- PostgreSQL 14+
+Changes:
+- Add title to `animeCatalog` or `additionalAnimeTitles`.
+- Add scene entry to `scenes`:
+  - `anime: '<Anime Title>'`
+  - `difficulty: DifficultyLevel.EASY | MEDIUM | HARD`
 
-## 2. Install dependencies
+Important:
+- `anime` in `scenes` must exactly match image filename title.
+- Keep enough unique anime for session generation.
 
+### 3. Rebuild local dataset
 ```bash
-npm install
+npm run prisma:seed --workspace server
 ```
 
-## 3. Configure environment variables
-
-Copy and fill:
-- `server/.env.example` -> `server/.env`
-- `client/.env.example` -> `client/.env`
-
-Important variables:
-
-- `server/.env`
-  - `PORT`
-  - `DATABASE_URL`
-  - `DIRECT_URL` (recommended for Prisma migrations when using poolers)
-  - `JWT_SECRET`
-  - `JWT_EXPIRES_IN`
-  - `CLIENT_URL`
-  - `STORAGE_PROVIDER`
-
-- `client/.env`
-  - `VITE_API_URL` (default: `http://localhost:4000/api`)
-
-## 4. Prisma setup
-
+If schema changed:
 ```bash
-npm run prisma:generate --workspace server
 npm run prisma:migrate --workspace server
 npm run prisma:seed --workspace server
 ```
 
-If you're using an existing remote DB and committed migrations:
+### 4. Validate before PR
+- Start app and play multiple sessions.
+- Confirm title appears in round pool and answer suggestions.
+- Confirm slider loads all 3 images for the added title.
+- Confirm no seed/runtime errors in backend logs.
 
-```bash
-npm run prisma:deploy --workspace server
-```
+### 5. Include in release PR
+Commit:
+- new files in `client/public/images/scenes`
+- `server/prisma/seed.ts` updates
 
-## 5. Run app
+In PR description include:
+- list of added anime
+- selected difficulty per anime
+- quick gameplay proof (screenshots/video)
 
-```bash
-npm run dev
-```
-
-- Frontend: `http://localhost:5173`
-- Backend: `http://localhost:4000`
-
-## Useful Scripts
-
-### Root
-```bash
-npm run dev
-npm run build
-npm run lint
-```
-
-### Server
-```bash
-npm run dev --workspace server
-npm run build --workspace server
-npm run lint --workspace server
-npm run prisma:generate --workspace server
-npm run prisma:migrate --workspace server
-npm run prisma:deploy --workspace server
-npm run prisma:seed --workspace server
-```
-
-### Client
-```bash
-npm run dev --workspace client
-npm run build --workspace client
-npm run lint --workspace client
-npm run preview --workspace client
-```
-
-## Deployment Notes
-
-### Frontend (Vercel)
-- Root directory: `client`
-- Build command: `npm run build`
-- Output directory: `dist`
-- Env: `VITE_API_URL`
-
-### Backend (Railway / Render)
-- Root directory: `server`
-- Build command: `npm run build`
-- Start command: `npm run start`
-- Env: `DATABASE_URL`, `JWT_SECRET`, `CLIENT_URL`, optional storage vars
+---
 
 ## Architecture Notes
 
@@ -265,10 +209,21 @@ npm run preview --workspace client
 - Auth context keeps JWT flow simple and explicit.
 - Multiplayer and ELO are implemented server-side to keep scoring authoritative.
 
+---
+
 ## Roadmap
 
-- WebSocket-based real-time multiplayer updates
-- Ranked seasons and decay
-- Admin panel for scene management
-- Replay mode and per-round analytics
-- More robust test coverage (unit/integration/e2e)
+- WebSocket/SSE multiplayer events instead of polling
+- Admin scene management panel with upload/moderation workflow
+- Background image optimization pipeline (format conversion + resizing)
+- Seasonal multiplayer ladder with soft reset and reward tiers
+- User profile avatars with upload + preset avatar pack
+- In-game achievements and account progression badges
+- Activate difficulty-based score multipliers for `EASY`, `MEDIUM`, and `HARD`
+
+---
+
+## License
+
+This project is proprietary and licensed as **All Rights Reserved**.  
+Commercial use is not permitted without explicit written permission.
