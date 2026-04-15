@@ -8,8 +8,8 @@
 ![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?logo=prisma&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-4169E1?logo=postgresql&logoColor=white)
 
-OtakuVersus is a fullstack anime guessing game inspired by GeoGuessr.  
-Players analyze anime-inspired scene frames and type the anime title.
+OtakuVersus is a manga-styled anime guessing game with both singleplayer and real-time multiplayer modes.  
+Players identify anime titles from scene images, earn points, and compete in rankings.
 
 ![Front page preview](docs/readme-images/front_page.png)
 
