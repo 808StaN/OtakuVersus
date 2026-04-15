@@ -14,6 +14,7 @@ export function SceneImageCard({
   const [outgoingIndex, setOutgoingIndex] = useState<number | null>(null);
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
   const [isSliding, setIsSliding] = useState(false);
+  const [queuedDirection, setQueuedDirection] = useState<'left' | 'right' | null>(null);
   const tags = animeMeta?.genres?.slice(0, 4) ?? [];
   const safeImageUrls = imageUrls.length > 0 ? imageUrls : [];
 
@@ -21,6 +22,45 @@ export function SceneImageCard({
     setCurrentIndex(0);
     setOutgoingIndex(null);
     setIsSliding(false);
+    setQueuedDirection(null);
+  }, [safeImageUrls.join('|')]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const preloadRoundImages = async () => {
+      await Promise.allSettled(
+        safeImageUrls.map(
+          (url) =>
+            new Promise<void>((resolve) => {
+              const img = new Image();
+              img.src = url;
+
+              const finalize = () => {
+                if (!cancelled) {
+                  resolve();
+                }
+              };
+
+              if (typeof img.decode === 'function') {
+                img.decode().then(finalize).catch(() => {
+                  img.onload = finalize;
+                  img.onerror = finalize;
+                });
+              } else {
+                img.onload = finalize;
+                img.onerror = finalize;
+              }
+            })
+        )
+      );
+    };
+
+    void preloadRoundImages();
+
+    return () => {
+      cancelled = true;
+    };
   }, [safeImageUrls.join('|')]);
 
   useEffect(() => {
@@ -29,7 +69,7 @@ export function SceneImageCard({
     const timeout = window.setTimeout(() => {
       setOutgoingIndex(null);
       setIsSliding(false);
-    }, 420);
+    }, 320);
 
     return () => window.clearTimeout(timeout);
   }, [isSliding]);
@@ -37,7 +77,11 @@ export function SceneImageCard({
   const canSlide = safeImageUrls.length > 1;
 
   const triggerSlide = (direction: 'left' | 'right') => {
-    if (!canSlide || isSliding) return;
+    if (!canSlide) return;
+    if (isSliding) {
+      setQueuedDirection(direction);
+      return;
+    }
 
     const nextIndex =
       direction === 'right'
@@ -49,6 +93,13 @@ export function SceneImageCard({
     setCurrentIndex(nextIndex);
     setIsSliding(true);
   };
+
+  useEffect(() => {
+    if (isSliding || !queuedDirection) return;
+    const nextDirection = queuedDirection;
+    setQueuedDirection(null);
+    triggerSlide(nextDirection);
+  }, [isSliding, queuedDirection]);
 
   return (
     <article className="manga-panel manga-panel-lift mx-auto w-[88%] overflow-hidden p-0 md:w-[72%]">
@@ -64,28 +115,22 @@ export function SceneImageCard({
           let transitionClass = '';
           if (!isSliding) {
             transitionClass = isCurrent ? 'translate-x-0 opacity-100' : 'opacity-0';
-          } else if (slideDirection === 'right') {
-            transitionClass = isCurrent ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-100';
+          } else if (isCurrent) {
+            transitionClass = slideDirection === 'right' ? 'scene-slide-enter-right' : 'scene-slide-enter-left';
           } else {
-            transitionClass = isCurrent ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-100';
+            transitionClass = slideDirection === 'right' ? 'scene-slide-exit-left' : 'scene-slide-exit-right';
           }
-
-          const initialClass =
-            isSliding && isCurrent
-              ? slideDirection === 'right'
-                ? 'translate-x-full'
-                : '-translate-x-full'
-              : 'translate-x-0';
 
           return (
             <img
               key={`${url}-${index}`}
               src={url}
               alt="Anime scene"
-              loading="lazy"
-              className={`absolute inset-0 block h-full w-full object-cover transition-transform duration-400 ease-out ${
-                isCurrent ? 'z-10' : 'z-20'
-              } ${initialClass} ${transitionClass}`}
+              loading={index === currentIndex ? 'eager' : 'lazy'}
+              fetchPriority={index === currentIndex ? 'high' : 'auto'}
+              className={`absolute inset-0 block h-full w-full object-cover transform-gpu will-change-transform ${
+                isCurrent ? 'z-20' : 'z-10'
+              } ${transitionClass}`}
             />
           );
         })}
@@ -97,8 +142,7 @@ export function SceneImageCard({
             <button
               type="button"
               onClick={() => triggerSlide('left')}
-              disabled={isSliding}
-              className="absolute left-3 top-1/2 z-30 flex h-11 w-11 -translate-y-1/2 items-center justify-center border-[3px] border-black bg-[#ffd000] text-black shadow-sticker transition hover:-translate-y-[52%] hover:scale-105 active:translate-y-[-48%] disabled:opacity-70"
+              className="absolute left-3 top-1/2 z-30 flex h-11 w-11 -translate-y-1/2 items-center justify-center border-[3px] border-black bg-[#ffd000] text-black shadow-sticker transition hover:-translate-y-[52%] hover:scale-105 active:translate-y-[-48%]"
               aria-label="Previous scene image"
             >
               <span className="font-sans text-2xl font-black leading-none">{'<'}</span>
@@ -106,8 +150,7 @@ export function SceneImageCard({
             <button
               type="button"
               onClick={() => triggerSlide('right')}
-              disabled={isSliding}
-              className="absolute right-3 top-1/2 z-30 flex h-11 w-11 -translate-y-1/2 items-center justify-center border-[3px] border-black bg-[#ffd000] text-black shadow-sticker transition hover:-translate-y-[52%] hover:scale-105 active:translate-y-[-48%] disabled:opacity-70"
+              className="absolute right-3 top-1/2 z-30 flex h-11 w-11 -translate-y-1/2 items-center justify-center border-[3px] border-black bg-[#ffd000] text-black shadow-sticker transition hover:-translate-y-[52%] hover:scale-105 active:translate-y-[-48%]"
               aria-label="Next scene image"
             >
               <span className="font-sans text-2xl font-black leading-none">{'>'}</span>

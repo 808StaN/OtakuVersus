@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { Button } from './button';
 
 export function Modal({
@@ -18,8 +19,8 @@ export function Modal({
     return null;
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 p-4">
       <div className="manga-panel manga-border w-full max-w-xl p-6">
         <div className="flex items-center justify-between gap-3">
           <h3 className="panel-title text-4xl text-base-ink">{title}</h3>
@@ -30,6 +31,7 @@ export function Modal({
         <div className="speech-bubble mt-5">{children}</div>
         {cta ? <div className="mt-6 flex justify-end">{cta}</div> : null}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
