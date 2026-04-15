@@ -5,6 +5,7 @@ import { getMultiplayerQueueStatus } from '../api/game-api';
 import { Card } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { ErrorState } from '../components/ui/error-state';
+import { LoadingGlyph } from '../components/ui/loading-spinner';
 import { useJoinMultiplayerQueueMutation } from '../features/game/use-game';
 import { MultiplayerQueueResponse } from '../types/api';
 
@@ -88,7 +89,7 @@ export function MultiplayerQueuePage() {
       <Card className="mx-auto max-w-2xl space-y-5 text-center">
         <span className="comic-kicker">Multiplayer Mode</span>
         <h1 className="panel-title text-6xl">Connecting...</h1>
-        <div className="mx-auto h-5 w-5 animate-spin border-[4px] border-black border-t-[#bc002d]" />
+        <LoadingGlyph />
       </Card>
     );
   }
@@ -100,7 +101,7 @@ export function MultiplayerQueuePage() {
       <p className="text-base font-bold text-base-ink/80">
         Waiting in queue. You will be connected automatically when another player joins.
       </p>
-      <div className="mx-auto h-5 w-5 animate-spin border-[4px] border-black border-t-[#bc002d]" />
+      <LoadingGlyph />
       {queueState?.status === 'matched' ? (
         <p className="font-black text-[#bc002d]">
           Match found with {queueState.opponentNickname ?? 'Opponent'}
