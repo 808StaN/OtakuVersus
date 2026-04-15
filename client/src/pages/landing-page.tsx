@@ -75,8 +75,8 @@ export function LandingPage() {
               <LeaderboardTable
                 rows={
                   rankingView === 'single'
-                    ? singleLeaderboardQuery.data?.leaderboard ?? []
-                    : eloLeaderboardQuery.data?.leaderboard ?? []
+                    ? (singleLeaderboardQuery.data?.leaderboard ?? []).slice(0, 5)
+                    : (eloLeaderboardQuery.data?.leaderboard ?? []).slice(0, 5)
                 }
                 rankingType={rankingView}
                 embedded
