@@ -16,6 +16,7 @@ Players analyze anime-inspired scene frames and type the anime title.
 ---
 
 ## Table of Contents
+
 - [Core Features](#core-features)
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
@@ -47,6 +48,7 @@ Players analyze anime-inspired scene frames and type the anime title.
 ## Tech Stack
 
 ### Frontend
+
 - ⚛️ React 19
 - 🔷 TypeScript
 - ⚡ Vite
@@ -55,6 +57,7 @@ Players analyze anime-inspired scene frames and type the anime title.
 - 📦 TanStack Query
 
 ### Backend
+
 - 🟢 Node.js
 - 🚏 Express
 - 🔷 TypeScript
@@ -62,6 +65,7 @@ Players analyze anime-inspired scene frames and type the anime title.
 - 🐘 PostgreSQL
 
 ### Additional
+
 - 🔐 JWT auth
 - 🗂️ Storage abstraction layer (`noop` / Cloudinary / Supabase Storage)
 - ▲ Frontend deploy-ready for Vercel
@@ -148,10 +152,13 @@ OtakuVersus/
 This section describes how to add new anime content as part of an official release contribution.
 
 ### 1. Add scene assets
+
 Put exactly 3 images per anime in:
+
 - `client/public/images/scenes`
 
 Use naming:
+
 - `<Anime Title>_1.png`
 - `<Anime Title>_2.png`
 - `<Anime Title>_3.png`
@@ -159,42 +166,52 @@ Use naming:
 Supported extensions: `.png`, `.jpg`, `.jpeg`, `.webp`.
 
 ### 2. Update seed source of truth
+
 Edit:
+
 - `server/prisma/seed.ts`
 
 Changes:
+
 - Add title to `animeCatalog` or `additionalAnimeTitles`.
 - Add scene entry to `scenes`:
   - `anime: '<Anime Title>'`
   - `difficulty: DifficultyLevel.EASY | MEDIUM | HARD`
 
 Important:
+
 - `anime` in `scenes` must exactly match image filename title.
 - Keep enough unique anime for session generation.
 
 ### 3. Rebuild local dataset
+
 ```bash
 npm run prisma:seed --workspace server
 ```
 
 If schema changed:
+
 ```bash
 npm run prisma:migrate --workspace server
 npm run prisma:seed --workspace server
 ```
 
 ### 4. Validate before PR
+
 - Start app and play multiple sessions.
 - Confirm title appears in round pool and answer suggestions.
 - Confirm slider loads all 3 images for the added title.
 - Confirm no seed/runtime errors in backend logs.
 
 ### 5. Include in release PR
+
 Commit:
+
 - new files in `client/public/images/scenes`
 - `server/prisma/seed.ts` updates
 
 In PR description include:
+
 - list of added anime
 - selected difficulty per anime
 - quick gameplay proof (screenshots/video)
@@ -227,4 +244,3 @@ In PR description include:
 
 This project is proprietary and licensed as **All Rights Reserved**.  
 Commercial use is not permitted without explicit written permission.
-
