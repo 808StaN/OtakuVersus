@@ -31,6 +31,13 @@ export function Button({
   children,
   ...props
 }: ButtonProps) {
+  const loadingIndicator = (
+    <span className="relative z-10 inline-flex items-center gap-2">
+      <span className="h-4 w-4 animate-spin border-[3px] border-black border-t-[#bc002d]" />
+      <span>Loading...</span>
+    </span>
+  );
+
   return (
     <button
       className={cn(
@@ -42,7 +49,7 @@ export function Button({
       disabled={disabled || loading}
       {...props}
     >
-      <span className="relative z-10">{loading ? 'Loading...' : children}</span>
+      {loading ? loadingIndicator : <span className="relative z-10">{children}</span>}
     </button>
   );
 }
