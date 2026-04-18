@@ -39,7 +39,7 @@ export function LandingPage() {
         <Card>
           <span className="comic-kicker">How It Works</span>
           <ol className="mt-4 space-y-3 text-base-ink/85">
-            <li>1. Pick your mode: SinglePlayer for solo runs or Multiplayer for live duels.</li>
+            <li>1. Pick your mode: singleplayer for solo runs or multiplayer for live duels.</li>
             <li>2. Analyze each frame and type the anime title with live search suggestions.</li>
             <li>3. Complete 5 rounds, lock your score, and track your progress in history and ranks.</li>
           </ol>
@@ -57,7 +57,7 @@ export function LandingPage() {
               onClick={() => setRankingView('single')}
               className="px-3 py-1 text-xs focus:ring-0 focus:ring-offset-0"
             >
-              Singleplayer
+              singleplayer
             </Button>
             <Button
               type="button"
@@ -65,7 +65,7 @@ export function LandingPage() {
               onClick={() => setRankingView('elo')}
               className="px-3 py-1 text-xs focus:ring-0 focus:ring-offset-0"
             >
-              Multiplayer
+              multiplayer
             </Button>
           </div>
           <div className="mt-3 overflow-hidden border-[4px] border-black bg-[#f8f3e6] shadow-sticker">

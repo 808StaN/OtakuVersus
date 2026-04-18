@@ -75,7 +75,7 @@ export function GameModeSection({
 
         <div className="space-y-3 panel-overlap-right">
           <div className="manga-panel p-4">
-            <p className="text-sm font-black uppercase tracking-[0.16em] text-[#cf1a4f]">SinglePlayer</p>
+            <p className="text-sm font-black uppercase tracking-[0.16em] text-[#cf1a4f]">singleplayer</p>
             <p className="mt-2 text-sm text-base-ink/85">
               Play a classic solo run with 5 rounds and immediate score feedback after each answer.
             </p>
@@ -86,7 +86,7 @@ export function GameModeSection({
             </div>
           </div>
           <div className="manga-panel p-4">
-            <p className="text-sm font-black uppercase tracking-[0.16em] text-[#cf1a4f]">Multiplayer</p>
+            <p className="text-sm font-black uppercase tracking-[0.16em] text-[#cf1a4f]">multiplayer</p>
             <p className="mt-2 text-sm text-base-ink/85">
               Jump into matchmaking and battle another player live in the same timed round set.
             </p>
