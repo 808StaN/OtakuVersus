@@ -138,6 +138,19 @@ a:focus-visible,
     padding: 0.95rem;
   }
 
+  .landing-hero-bg {
+    background: url('/images/bg_otakuversus.png') center/cover fixed no-repeat;
+  }
+
+  .page-background-filter {
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.15) 1px, transparent 0),
+      repeating-linear-gradient(145deg, rgba(0, 0, 0, 0.22) 0 2px, transparent 2px 15px);
+    background-size: 16px 16px, 100% 100%;
+    opacity: 0.24;
+  }
+
   .manga-panel {
     position: relative;
     overflow: hidden;

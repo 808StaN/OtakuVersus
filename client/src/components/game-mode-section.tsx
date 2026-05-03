@@ -13,15 +13,10 @@ export function GameModeSection({
   soloLoading?: boolean;
 }) {
   return (
-    <section className="manga-panel manga-cut relative overflow-hidden px-6 py-10 md:px-10 md:py-12">
-      <img
-        src="/images/bg_otakuversus.png"
-        alt="Manga cover background"
-        className="absolute inset-0 h-full w-full object-cover opacity-45"
-        loading="lazy"
-      />
+    <section className="landing-hero-bg relative overflow-hidden border-4 border-black px-6 py-10 shadow-[6px_6px_0_#000] md:px-10 md:py-12">
+      <div className="absolute inset-0 bg-[#f5f0e3]/25" />
       <div className="absolute inset-0 bg-black/55" />
-      <div className="manga-grid absolute inset-0 opacity-25" />
+      <div className="page-background-filter absolute inset-0" />
       <div className="absolute right-4 top-4 border-[4px] border-black bg-[#ffd000] px-3 py-1 text-xs font-black uppercase tracking-[0.14em] shadow-sticker">
         Choose Your Mode
       </div>
