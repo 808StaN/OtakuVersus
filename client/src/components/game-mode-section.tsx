@@ -32,7 +32,19 @@ export function GameModeSection({
           <div className="relative">
             <h1
               className="text-5xl font-normal tracking-[0.06em] text-white md:text-8xl"
-              style={{ WebkitTextStroke: '1.5px #000', textShadow: '3px 3px 0 #000' }}
+              style={{
+                textShadow: `
+                  -1.5px -1.5px 0 #000,
+                   0px   -1.5px 0 #000,
+                   1.5px -1.5px 0 #000,
+                   1.5px  0px   0 #000,
+                   1.5px  1.5px 0 #000,
+                   0px    1.5px 0 #000,
+                  -1.5px  1.5px 0 #000,
+                  -1.5px  0px   0 #000,
+                   5px    5px   0 rgba(0,0,0,0.9)
+                `
+              }}
             >
               <span className="text-white">Otaku</span>
               <span className="!text-[#cf1a4f]" style={{ color: '#cf1a4f' }}>
