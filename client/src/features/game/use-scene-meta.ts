@@ -1,12 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { getAnimeTitles, getDifficulties } from '../../api/scenes-api';
-
-export function useDifficultiesQuery() {
-  return useQuery({
-    queryKey: ['scene-difficulties'],
-    queryFn: getDifficulties
-  });
-}
+import { getAnimeTitles } from '../../api/scenes-api';
 
 export function useAnimeTitlesQuery() {
   return useQuery({

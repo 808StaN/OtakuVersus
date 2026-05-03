@@ -15,8 +15,6 @@ const envSchema = z.object({
   CLIENT_URL: z.string().url().default('http://localhost:5173'),
   STORAGE_PROVIDER: z.enum(['noop', 'cloudinary', 'supabase']).default('noop'),
   CLOUDINARY_CLOUD_NAME: emptyToUndefined(z.string()),
-  CLOUDINARY_API_KEY: emptyToUndefined(z.string()),
-  CLOUDINARY_API_SECRET: emptyToUndefined(z.string()),
   CLOUDINARY_UPLOAD_PRESET: emptyToUndefined(z.string()),
   SUPABASE_URL: emptyToUndefined(z.string().url()),
   SUPABASE_SERVICE_ROLE_KEY: emptyToUndefined(z.string()),
