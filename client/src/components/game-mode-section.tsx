@@ -58,15 +58,15 @@ export function GameModeSection({
                 loading="lazy"
               />
               {!isAuthenticated ? (
-                <div className="mb-2 ml-auto flex max-w-[220px] flex-col items-center text-center sm:mb-4 sm:ml-2 sm:block sm:max-w-[280px] sm:text-left md:mb-6">
-                  <p className="mb-2 text-xs font-black uppercase tracking-[0.12em] text-[#ffd000]">
+                <div className="mb-2 ml-auto flex max-w-[220px] flex-col items-end sm:mb-4 sm:ml-2 sm:block sm:max-w-[280px] md:mb-6">
+                  <p className="mb-2 w-full text-center text-xs font-black uppercase tracking-[0.12em] text-[#ffd000] sm:text-left">
                     Join Us
                   </p>
-                  <p className="mb-3 text-sm font-bold text-white/95">
+                  <p className="mb-3 text-center text-sm font-bold text-white/95 sm:text-left">
                     Create your account and climb the ranks to claim the title of the ultimate anime fan.
                   </p>
                   <Link to="/register">
-                    <Button size="lg" className="w-[140px] px-1.5 py-1.5 text-sm leading-tight sm:w-full sm:px-7 sm:py-4 sm:text-lg">
+                    <Button size="lg" className="w-[124px] px-1 py-1 text-xs leading-tight sm:w-full sm:px-7 sm:py-4 sm:text-lg">
                       <span className="block sm:inline">Create</span>{' '}
                       <span className="block sm:inline">Account</span>
                     </Button>
