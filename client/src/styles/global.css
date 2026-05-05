@@ -123,7 +123,6 @@ a:focus-visible,
 [role='button']:focus,
 [role='button']:focus-visible {
   outline: none;
-  box-shadow: none;
 }
 
 #root {
