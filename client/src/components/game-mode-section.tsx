@@ -58,7 +58,7 @@ export function GameModeSection({
                 loading="lazy"
               />
               {!isAuthenticated ? (
-                <div className="mb-2 ml-auto max-w-[190px] sm:mb-4 sm:ml-2 sm:max-w-[280px] md:mb-6">
+                <div className="mb-2 ml-auto flex max-w-[220px] flex-col items-end sm:mb-4 sm:ml-2 sm:block sm:max-w-[280px] md:mb-6">
                   <p className="mb-2 text-xs font-black uppercase tracking-[0.12em] text-[#ffd000]">
                     Join Us
                   </p>
