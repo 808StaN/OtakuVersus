@@ -66,8 +66,9 @@ export function GameModeSection({
                     Create your account and climb the ranks to claim the title of the ultimate anime fan.
                   </p>
                   <Link to="/register">
-                    <Button size="lg" className="w-full px-4 py-3 text-base sm:px-7 sm:py-4 sm:text-lg">
-                      Create Account
+                    <Button size="lg" className="w-[190px] px-4 py-3 text-base sm:w-full sm:px-7 sm:py-4 sm:text-lg">
+                      <span className="block sm:inline">Create</span>{' '}
+                      <span className="block sm:inline">Account</span>
                     </Button>
                   </Link>
                 </div>
