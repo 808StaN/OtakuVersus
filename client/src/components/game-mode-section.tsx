@@ -49,7 +49,7 @@ export function GameModeSection({
             goal: prove you're the biggest anime fan.
           </div>
 
-          <div className="-mt-10 flex flex-col gap-2 pt-0 sm:-mt-1">
+          <div className="-mt-1 flex flex-col gap-2 pt-0">
             <div className="flex min-h-[92px] items-end gap-2 sm:min-h-[165px] sm:gap-3 md:min-h-[190px]">
               <img
                 src="/images/anime_boy_pointing.png"
@@ -77,8 +77,8 @@ export function GameModeSection({
           </div>
         </div>
 
-        <div className="-mt-7 space-y-3 panel-overlap-right sm:mt-0">
-          <div className="inline-flex w-fit rotate-[-1deg] border-[4px] border-black bg-[#ffd000] px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] shadow-sticker sm:text-xs">
+        <div className="space-y-3 panel-overlap-right">
+          <div className="-mt-7 inline-flex w-fit rotate-[-1deg] border-[4px] border-black bg-[#ffd000] px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] shadow-sticker sm:mt-0 sm:text-xs">
             Choose Your Mode
           </div>
           <div className="manga-panel p-3 sm:p-4">
