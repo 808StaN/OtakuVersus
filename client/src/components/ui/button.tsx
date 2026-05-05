@@ -22,6 +22,18 @@ const sizeClasses: Record<ButtonSize, string> = {
   lg: 'px-5 py-3 text-lg'
 };
 
+const overlayClasses: Record<ButtonVariant, string> = {
+  primary: 'before:absolute before:inset-0 before:bg-speedlines before:opacity-20 before:mix-blend-multiply',
+  secondary: 'before:absolute before:inset-0 before:bg-speedlines before:opacity-20 before:mix-blend-multiply',
+  ghost: ''
+};
+
+const backgroundClipClasses: Record<ButtonVariant, string> = {
+  primary: 'bg-clip-padding',
+  secondary: 'bg-clip-padding',
+  ghost: 'bg-clip-border'
+};
+
 export function Button({
   className,
   variant = 'primary',
@@ -34,8 +46,10 @@ export function Button({
   return (
     <button
       className={cn(
-        'relative isolate inline-flex items-center justify-center overflow-hidden border-[4px] font-extrabold uppercase tracking-wide shadow-panel transition duration-150 before:absolute before:inset-0 before:bg-speedlines before:opacity-20 before:mix-blend-multiply hover:-translate-x-[1px] hover:-translate-y-[3px] hover:shadow-panel-hover active:translate-y-[1px] active:shadow-panel focus:outline-none disabled:cursor-not-allowed disabled:opacity-60',
+        'relative isolate inline-flex box-border items-center justify-center overflow-hidden border-[4px] font-extrabold uppercase tracking-wide shadow-panel transition duration-150 hover:-translate-x-[1px] hover:-translate-y-[3px] hover:shadow-panel-hover active:translate-y-[1px] active:shadow-panel focus:outline-none disabled:cursor-not-allowed disabled:opacity-60',
         variantClasses[variant],
+        backgroundClipClasses[variant],
+        overlayClasses[variant],
         sizeClasses[size],
         className
       )}
