@@ -17,10 +17,6 @@ export function GameModeSection({
       <div className="absolute inset-0 bg-[#f5f0e3]/25" />
       <div className="absolute inset-0 bg-black/55" />
       <div className="page-background-filter absolute inset-0" />
-      <div className="relative z-10 mb-3 inline-flex border-[4px] border-black bg-[#ffd000] px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] shadow-sticker sm:absolute sm:right-4 sm:top-4 sm:mb-0 sm:text-xs">
-        Choose Your Mode
-      </div>
-
       <div className="relative z-10 comic-gutters">
         <div className="space-y-3">
           <p className="comic-kicker">Anime Guessing Arena</p>
@@ -81,6 +77,9 @@ export function GameModeSection({
         </div>
 
         <div className="space-y-3 panel-overlap-right">
+          <div className="inline-flex w-fit rotate-[-1deg] border-[4px] border-black bg-[#ffd000] px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] shadow-sticker sm:text-xs">
+            Choose Your Mode
+          </div>
           <div className="manga-panel p-3 sm:p-4">
             <p className="text-sm font-black uppercase tracking-[0.16em] text-[#cf1a4f]">singleplayer</p>
             <p className="mt-2 text-sm text-base-ink/85">

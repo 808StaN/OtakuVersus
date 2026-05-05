@@ -290,6 +290,7 @@ a:focus-visible,
 
   .comic-gutters > * + *::before {
     content: '';
+    display: none;
     position: absolute;
     left: -0.2rem;
     right: -0.2rem;
@@ -381,6 +382,7 @@ a:focus-visible,
     }
 
     .comic-gutters > * + *::before {
+      display: block;
       top: 0;
       bottom: 0;
       width: 6px;
