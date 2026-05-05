@@ -315,10 +315,10 @@ export function GamePage() {
       </div>
 
       <Card className="relative z-40 mx-auto w-full max-w-xl space-y-4 overflow-visible">
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <span className="comic-kicker">Type Answer</span>
           {multiplayerStatusQuery.data?.multiplayer ? (
-            <div className="border-[3px] border-black bg-[#fffdf7] px-3 py-1 text-xs font-black uppercase tracking-[0.1em] text-base-ink shadow-sticker">
+            <div className="max-w-full break-words border-[3px] border-black bg-[#fffdf7] px-3 py-1 text-xs font-black uppercase tracking-[0.1em] text-base-ink shadow-sticker">
               vs {multiplayerStatusQuery.data.opponentNickname ?? 'Player'}
               {typeof multiplayerStatusQuery.data.opponentElo === 'number'
                 ? ` (ELO ${multiplayerStatusQuery.data.opponentElo})`
@@ -393,7 +393,7 @@ export function GamePage() {
 
       {roundToast ? (
         <aside
-          className={`fixed bottom-4 right-4 z-40 w-[320px] rotate-[-2deg] border-[4px] border-black bg-[#fffdf7] p-3 shadow-panel transition-all duration-300 ${
+          className={`fixed bottom-3 left-3 right-3 z-40 w-auto rotate-[-2deg] border-[4px] border-black bg-[#fffdf7] p-3 shadow-panel transition-all duration-300 sm:bottom-4 sm:left-auto sm:right-4 sm:w-[320px] ${
             roundToastVisible ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'
           }`}
         >

@@ -88,7 +88,7 @@ export function MultiplayerQueuePage() {
     return (
       <Card className="mx-auto max-w-2xl space-y-5 text-center">
         <span className="comic-kicker">Multiplayer Mode</span>
-        <h1 className="panel-title text-6xl">Connecting...</h1>
+        <h1 className="panel-title text-4xl sm:text-5xl md:text-6xl">Connecting...</h1>
         <LoadingGlyph />
       </Card>
     );
@@ -97,7 +97,7 @@ export function MultiplayerQueuePage() {
   return (
     <Card className="mx-auto max-w-2xl space-y-5 text-center">
       <span className="comic-kicker">Multiplayer Mode</span>
-      <h1 className="panel-title text-6xl">Searching Rival...</h1>
+      <h1 className="panel-title text-4xl sm:text-5xl md:text-6xl">Searching Rival...</h1>
       <p className="text-base font-bold text-base-ink/80">
         Waiting in queue. You will be connected automatically when another player joins.
       </p>

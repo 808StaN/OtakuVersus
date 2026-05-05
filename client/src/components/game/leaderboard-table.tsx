@@ -26,9 +26,10 @@ export function LeaderboardTable({
 }) {
   const singleRows = rankingType === "single" ? (rows as LeaderboardRow[]) : [];
   const eloRows = rankingType === "elo" ? (rows as EloLeaderboardRow[]) : [];
+  const tableMinWidthClass = compact ? "min-w-[430px]" : "min-w-[560px]";
   const table = (
     <div className="w-full overflow-x-auto">
-      <table className="min-w-full text-left text-sm text-base-ink/90">
+      <table className={`${tableMinWidthClass} text-left text-xs text-base-ink/90 sm:min-w-full sm:text-sm`}>
         <thead className="bg-[#ffd000] text-xs uppercase tracking-[0.18em] text-black">
           <tr>
             <th className={compact ? "px-3 py-2" : "px-4 py-3"}>#</th>

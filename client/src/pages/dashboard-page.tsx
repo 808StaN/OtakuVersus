@@ -37,14 +37,14 @@ export function DashboardPage() {
           <span className="comic-kicker">Player Dashboard</span>
           <span className="ink-stamp">Stats Center</span>
         </div>
-        <h1 className="panel-title mt-3 text-6xl">Welcome back, {user?.nickname}</h1>
+        <h1 className="panel-title mt-3 text-4xl sm:text-5xl md:text-6xl">Welcome back, {user?.nickname}</h1>
       </Card>
 
       <Card className="space-y-5">
         <div className="grid gap-7 lg:grid-cols-2">
           <section className="space-y-3">
-            <h2 className="panel-title text-4xl">Singleplayer</h2>
-            <div className="grid grid-cols-2 gap-3">
+            <h2 className="panel-title text-3xl sm:text-4xl">Singleplayer</h2>
+            <div className="grid gap-3 sm:grid-cols-2">
               <div className="comic-note">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">Current Rank</p>
                 <p className="mt-1 text-2xl font-black text-slate-950">{singleRank ? `#${singleRank}` : 'Unranked'}</p>
@@ -69,8 +69,8 @@ export function DashboardPage() {
           </section>
 
           <section className="space-y-3 pt-3 lg:pt-0">
-            <h2 className="panel-title text-4xl">Multiplayer</h2>
-            <div className="grid grid-cols-2 gap-3">
+            <h2 className="panel-title text-3xl sm:text-4xl">Multiplayer</h2>
+            <div className="grid gap-3 sm:grid-cols-2">
               <div className="comic-note">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">Current Rank</p>
                 <p className="mt-1 text-2xl font-black text-slate-950">

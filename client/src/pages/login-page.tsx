@@ -34,11 +34,11 @@ export function LoginPage() {
   return (
     <div className="mx-auto w-full max-w-[38rem]">
       <Card>
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <span className="comic-kicker">Login Portal</span>
           <span className="ink-stamp">Access</span>
         </div>
-        <h1 className="panel-title mt-3 text-6xl">Welcome Back</h1>
+        <h1 className="panel-title mt-3 text-4xl sm:text-5xl md:text-6xl">Welcome Back</h1>
 
         <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
           <Input

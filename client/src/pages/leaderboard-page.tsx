@@ -108,14 +108,14 @@ export function LeaderboardPage() {
   return (
     <div className="space-y-5">
       <div
-        className={`${isAuthenticated ? "comic-layout-asym" : "space-y-4"} mb-16`}
+        className={`${isAuthenticated ? "comic-layout-asym" : "space-y-4"} mb-10 md:mb-16`}
       >
         <Card>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <span className="comic-kicker">Ranking Board</span>
             <span className="ink-stamp">Top 50</span>
           </div>
-          <h1 className="panel-title mt-3 text-6xl">
+          <h1 className="panel-title mt-3 text-4xl sm:text-5xl md:text-6xl">
             {rankingView === "single"
               ? "Singleplayer Leaderboard"
               : "Multiplayer Leaderboard"}
@@ -125,7 +125,7 @@ export function LeaderboardPage() {
               type="button"
               variant={rankingView === "single" ? "primary" : "secondary"}
               onClick={() => setRankingView("single")}
-              className="px-3 py-1 text-xs focus:ring-0 focus:ring-offset-0"
+              className="flex-1 px-3 py-1 text-xs focus:ring-0 focus:ring-offset-0 sm:flex-none"
             >
               Singleplayer
             </Button>
@@ -133,7 +133,7 @@ export function LeaderboardPage() {
               type="button"
               variant={rankingView === "elo" ? "primary" : "secondary"}
               onClick={() => setRankingView("elo")}
-              className="px-3 py-1 text-xs focus:ring-0 focus:ring-offset-0"
+              className="flex-1 px-3 py-1 text-xs focus:ring-0 focus:ring-offset-0 sm:flex-none"
             >
               Multiplayer
             </Button>
@@ -149,7 +149,7 @@ export function LeaderboardPage() {
           <div className="space-y-4">
             <Card>
               <span className="comic-kicker">Your Stats</span>
-              <div className="mt-4 grid grid-cols-2 gap-3 text-sm sm:text-base">
+              <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2 sm:text-base">
                 {rankingView === "single" ? (
                   <>
                     <div className="comic-note">

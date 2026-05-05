@@ -13,11 +13,11 @@ export function GameModeSection({
   soloLoading?: boolean;
 }) {
   return (
-    <section className="landing-hero-bg relative overflow-hidden border-4 border-black px-6 py-10 shadow-[6px_6px_0_#000] md:px-10 md:py-12">
+    <section className="landing-hero-bg relative overflow-hidden border-4 border-black px-3 py-8 shadow-[6px_6px_0_#000] sm:px-6 md:px-10 md:py-12">
       <div className="absolute inset-0 bg-[#f5f0e3]/25" />
       <div className="absolute inset-0 bg-black/55" />
       <div className="page-background-filter absolute inset-0" />
-      <div className="absolute right-4 top-4 border-[4px] border-black bg-[#ffd000] px-3 py-1 text-xs font-black uppercase tracking-[0.14em] shadow-sticker">
+      <div className="relative z-10 mb-4 inline-flex border-[4px] border-black bg-[#ffd000] px-3 py-1 text-xs font-black uppercase tracking-[0.14em] shadow-sticker sm:absolute sm:right-4 sm:top-4 sm:mb-0">
         Choose Your Mode
       </div>
 
@@ -26,7 +26,7 @@ export function GameModeSection({
           <p className="comic-kicker">Anime Guessing Arena</p>
           <div className="relative">
             <h1
-              className="text-5xl font-normal tracking-[0.06em] text-white md:text-8xl"
+                className="text-[clamp(3rem,15vw,6rem)] font-normal tracking-[0.06em] text-white md:text-8xl"
               style={{
                 textShadow: `
                   -1.5px -1.5px 0 #000,
@@ -54,15 +54,15 @@ export function GameModeSection({
           </div>
 
           <div className="-mt-1 flex flex-col gap-2 pt-0">
-            <div className="flex min-h-[165px] items-end gap-3 md:min-h-[190px]">
+            <div className="flex min-h-[120px] items-end gap-2 sm:min-h-[165px] sm:gap-3 md:min-h-[190px]">
               <img
                 src="/images/anime_boy_pointing.png"
                 alt="Anime boy pointing up"
-                className="-mb-12 ml-4 h-56 w-auto object-contain md:-mb-14 md:ml-6 md:h-64"
+                className="-mb-7 ml-0 h-40 w-auto object-contain sm:-mb-12 sm:ml-4 sm:h-56 md:-mb-14 md:ml-6 md:h-64"
                 loading="lazy"
               />
               {!isAuthenticated ? (
-                <div className="mb-4 ml-2 max-w-[280px] md:mb-6">
+                <div className="mb-2 ml-1 max-w-[280px] sm:mb-4 sm:ml-2 md:mb-6">
                   <p className="mb-2 text-xs font-black uppercase tracking-[0.12em] text-[#ffd000]">
                     Join Us
                   </p>
