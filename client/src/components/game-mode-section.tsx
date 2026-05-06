@@ -100,7 +100,7 @@ export function GameModeSection({
         </div>
 
         <div className="space-y-3 panel-overlap-right">
-          <div className="mx-auto flex w-fit rotate-[-1deg] border-[4px] border-black bg-[#ffd000] px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] shadow-sticker sm:mx-0 sm:text-xs">
+          <div className="mx-auto flex w-fit rotate-[-1deg] border-[4px] border-black bg-[#ffd000] px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] shadow-sticker sm:text-xs lg:mx-0">
             Choose Your Mode
           </div>
           <div className="manga-panel p-3 sm:p-4">
