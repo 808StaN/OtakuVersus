@@ -56,7 +56,7 @@ export function GameModeSection({
                   <img
                     src="/images/anime_boy_pointing.png"
                     alt="Anime boy pointing up"
-                    className="relative z-10 -mb-1 ml-2 h-32 w-auto -translate-y-0.5 object-contain"
+                    className="relative z-10 -mb-1 ml-2 h-32 w-auto -translate-y-16 object-contain"
                     loading="lazy"
                   />
                 </div>
