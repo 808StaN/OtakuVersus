@@ -50,25 +50,47 @@ export function GameModeSection({
           </div>
 
           <div className="-mt-1 flex flex-col gap-2 pt-0">
-            <div className="flex min-h-[92px] items-end gap-2 sm:min-h-[165px] sm:gap-3 md:min-h-[190px]">
+            {!isAuthenticated ? (
+              <div className="relative min-h-[168px] sm:hidden">
+                <div className="absolute bottom-0 left-0 w-[150px]">
+                  <img
+                    src="/images/anime_boy_pointing.png"
+                    alt="Anime boy pointing up"
+                    className="relative z-20 -mb-3 h-36 w-auto object-contain"
+                    loading="lazy"
+                  />
+                  <Link to="/register">
+                    <Button size="lg" className="relative z-10 ml-4 w-[124px] px-1 py-1 text-xs leading-tight">
+                      <span className="block">Create</span> <span className="block">Account</span>
+                    </Button>
+                  </Link>
+                </div>
+
+                <div className="ml-[150px] pt-5 text-center">
+                  <p className="mb-2 text-xs font-black uppercase tracking-[0.12em] text-[#ffd000]">Join Us</p>
+                  <p className="text-sm font-bold leading-snug text-white/95">
+                    Create your account and climb the ranks to claim the title of the ultimate anime fan.
+                  </p>
+                </div>
+              </div>
+            ) : null}
+
+            <div className="hidden min-h-[165px] items-end gap-3 sm:flex md:min-h-[190px]">
               <img
                 src="/images/anime_boy_pointing.png"
                 alt="Anime boy pointing up"
-                className="-mb-6 ml-0 h-32 w-auto object-contain sm:-mb-12 sm:ml-4 sm:h-56 md:-mb-14 md:ml-6 md:h-64"
+                className="-mb-12 ml-4 h-56 w-auto object-contain md:-mb-14 md:ml-6 md:h-64"
                 loading="lazy"
               />
               {!isAuthenticated ? (
-                <div className="mb-2 ml-auto flex max-w-[220px] flex-col items-end sm:mb-4 sm:ml-2 sm:block sm:max-w-[280px] md:mb-6">
-                  <p className="mb-2 w-full text-center text-xs font-black uppercase tracking-[0.12em] text-[#ffd000] sm:text-left">
-                    Join Us
-                  </p>
-                  <p className="mb-3 text-center text-sm font-bold text-white/95 sm:text-left">
+                <div className="mb-4 ml-2 max-w-[280px] md:mb-6">
+                  <p className="mb-2 text-xs font-black uppercase tracking-[0.12em] text-[#ffd000]">Join Us</p>
+                  <p className="mb-3 text-sm font-bold text-white/95">
                     Create your account and climb the ranks to claim the title of the ultimate anime fan.
                   </p>
                   <Link to="/register">
-                    <Button size="lg" className="w-[124px] px-1 py-1 text-xs leading-tight sm:w-full sm:px-7 sm:py-4 sm:text-lg">
-                      <span className="block sm:inline">Create</span>{' '}
-                      <span className="block sm:inline">Account</span>
+                    <Button size="lg" className="w-full px-7 py-4 text-lg">
+                      Create Account
                     </Button>
                   </Link>
                 </div>
@@ -78,7 +100,7 @@ export function GameModeSection({
         </div>
 
         <div className="space-y-3 panel-overlap-right">
-          <div className="-mt-7 inline-flex w-fit rotate-[-1deg] border-[4px] border-black bg-[#ffd000] px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] shadow-sticker sm:mt-0 sm:text-xs">
+          <div className="mx-auto inline-flex w-fit rotate-[-1deg] border-[4px] border-black bg-[#ffd000] px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] shadow-sticker sm:mx-0 sm:text-xs">
             Choose Your Mode
           </div>
           <div className="manga-panel p-3 sm:p-4">
