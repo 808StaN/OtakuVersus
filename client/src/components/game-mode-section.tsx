@@ -56,17 +56,17 @@ export function GameModeSection({
                   <img
                     src="/images/anime_boy_pointing.png"
                     alt="Anime boy pointing up"
-                    className="relative z-20 -mb-1 h-32 w-auto object-contain"
+                    className="relative z-10 -mb-1 ml-2 h-32 w-auto -translate-y-0.5 object-contain"
                     loading="lazy"
                   />
                   <Link to="/register">
-                    <Button size="lg" className="relative z-10 ml-4 w-[124px] px-1 py-1 text-xs leading-tight">
+                    <Button size="lg" className="relative z-20 ml-4 w-[184px] px-1 py-1 text-xs leading-tight">
                       <span className="block">Create</span> <span className="block">Account</span>
                     </Button>
                   </Link>
                 </div>
 
-                <div className="ml-[150px] pt-5 text-center">
+                <div className="ml-[150px] pt-1 text-center">
                   <p className="mb-2 text-xs font-black uppercase tracking-[0.12em] text-[#ffd000]">Join Us</p>
                   <p className="text-sm font-bold leading-snug text-white/95">
                     Create your account and climb the ranks to claim the title of the ultimate anime fan.
