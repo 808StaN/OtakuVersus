@@ -7,7 +7,7 @@ export function NotFoundPage() {
     <div className="mx-auto max-w-xl">
       <Card className="text-center">
         <p className="ink-stamp mx-auto bg-[#cf1a4f] text-white">404</p>
-        <h1 className="panel-title mt-3 text-7xl">Page Not Found</h1>
+        <h1 className="panel-title mt-3 text-5xl sm:text-6xl md:text-7xl">Page Not Found</h1>
         <div className="speech-bubble mx-auto mt-5 max-w-md">
           This location does not exist in this universe.
         </div>

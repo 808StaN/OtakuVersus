@@ -27,7 +27,7 @@ export function LandingPage() {
   };
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8 md:space-y-10">
       <GameModeSection
         isAuthenticated={isAuthenticated}
         onMultiplayerStart={handleMultiplayerStart}
@@ -55,7 +55,7 @@ export function LandingPage() {
               type="button"
               variant={rankingView === 'single' ? 'primary' : 'secondary'}
               onClick={() => setRankingView('single')}
-              className="px-3 py-1 text-xs focus:ring-0 focus:ring-offset-0"
+              className="flex-1 px-3 py-1 text-xs focus:ring-0 focus:ring-offset-0 sm:flex-none"
             >
               singleplayer
             </Button>
@@ -63,7 +63,7 @@ export function LandingPage() {
               type="button"
               variant={rankingView === 'elo' ? 'primary' : 'secondary'}
               onClick={() => setRankingView('elo')}
-              className="px-3 py-1 text-xs focus:ring-0 focus:ring-offset-0"
+              className="flex-1 px-3 py-1 text-xs focus:ring-0 focus:ring-offset-0 sm:flex-none"
             >
               multiplayer
             </Button>

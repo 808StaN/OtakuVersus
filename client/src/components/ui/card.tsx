@@ -8,5 +8,5 @@ export function Card({
   children: ReactNode;
   className?: string;
 }) {
-  return <article className={cn('manga-panel manga-panel-lift p-5', className)}>{children}</article>;
+  return <article className={cn('manga-panel manga-panel-lift p-4 sm:p-5', className)}>{children}</article>;
 }

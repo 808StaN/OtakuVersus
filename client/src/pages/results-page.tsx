@@ -114,9 +114,10 @@ export function ResultsPage() {
             </div>
           ) : null}
 
-          <div className="mt-6 flex flex-wrap gap-3">
+          <div className="mt-6 grid gap-3 sm:flex sm:flex-wrap">
             <Button
               loading={startGameMutation.isPending}
+              className="w-full sm:w-auto"
               onClick={async () => {
                 if (summary.mode === 'MULTIPLAYER') {
                   navigate('/multiplayer');
@@ -129,10 +130,10 @@ export function ResultsPage() {
             >
               Play Again
             </Button>
-            <Button variant="secondary" onClick={() => navigate('/dashboard')}>
+            <Button variant="secondary" className="w-full sm:w-auto" onClick={() => navigate('/dashboard')}>
               Back to Dashboard
             </Button>
-            <Button variant="secondary" onClick={() => navigate('/leaderboard')}>
+            <Button variant="secondary" className="w-full sm:w-auto" onClick={() => navigate('/leaderboard')}>
               Open Leaderboard
             </Button>
           </div>
@@ -140,7 +141,7 @@ export function ResultsPage() {
       </div>
 
       <section className="space-y-3">
-        <h2 className="panel-title text-5xl">Round Breakdown</h2>
+        <h2 className="panel-title text-4xl sm:text-5xl">Round Breakdown</h2>
         {rounds.map((round, idx) => (
           <Card key={round.order} className={idx % 2 === 0 ? 'panel-overlap-left' : 'panel-overlap-right'}>
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -155,7 +156,7 @@ export function ResultsPage() {
                 {round.isCorrect ? 'Correct' : 'Wrong'}
               </span>
             </div>
-            <div className="mt-3 grid gap-2 text-sm text-base-ink/85 md:grid-cols-2">
+            <div className="mt-3 grid gap-2 break-words text-sm text-base-ink/85 md:grid-cols-2">
               <p>Selected: {round.selectedAnswer ?? 'No answer'}</p>
               <p>Correct: {round.correctAnswer}</p>
               <p>Points: {round.pointsAwarded}</p>

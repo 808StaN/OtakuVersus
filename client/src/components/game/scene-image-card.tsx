@@ -102,7 +102,7 @@ export function SceneImageCard({
   }, [isSliding, queuedDirection]);
 
   return (
-    <article className="manga-panel manga-panel-lift mx-auto w-[88%] overflow-hidden p-0 md:w-[72%]">
+    <article className="manga-panel manga-panel-lift mx-auto w-full overflow-hidden p-0 sm:w-[92%] md:w-[72%]">
       <div className="relative aspect-video w-full overflow-hidden">
         {safeImageUrls.map((url, index) => {
           const isCurrent = index === currentIndex;
@@ -142,7 +142,7 @@ export function SceneImageCard({
             <button
               type="button"
               onClick={() => triggerSlide('left')}
-              className="absolute left-3 top-1/2 z-30 flex h-11 w-11 -translate-y-1/2 items-center justify-center border-[3px] border-black bg-[#ffd000] text-black shadow-sticker transition hover:-translate-y-[52%] hover:scale-105 active:translate-y-[-48%]"
+              className="absolute left-2 top-1/2 z-30 flex h-9 w-9 -translate-y-1/2 items-center justify-center border-[3px] border-black bg-[#ffd000] text-black shadow-sticker transition hover:-translate-y-[52%] hover:scale-105 active:translate-y-[-48%] sm:left-3 sm:h-11 sm:w-11"
               aria-label="Previous scene image"
             >
               <span className="font-sans text-2xl font-black leading-none">{'<'}</span>
@@ -150,7 +150,7 @@ export function SceneImageCard({
             <button
               type="button"
               onClick={() => triggerSlide('right')}
-              className="absolute right-3 top-1/2 z-30 flex h-11 w-11 -translate-y-1/2 items-center justify-center border-[3px] border-black bg-[#ffd000] text-black shadow-sticker transition hover:-translate-y-[52%] hover:scale-105 active:translate-y-[-48%]"
+              className="absolute right-2 top-1/2 z-30 flex h-9 w-9 -translate-y-1/2 items-center justify-center border-[3px] border-black bg-[#ffd000] text-black shadow-sticker transition hover:-translate-y-[52%] hover:scale-105 active:translate-y-[-48%] sm:right-3 sm:h-11 sm:w-11"
               aria-label="Next scene image"
             >
               <span className="font-sans text-2xl font-black leading-none">{'>'}</span>
@@ -158,16 +158,16 @@ export function SceneImageCard({
           </>
         ) : null}
 
-        <div className="absolute left-3 top-3 z-30 flex flex-wrap gap-2">
+        <div className="absolute left-2 right-2 top-2 z-30 flex flex-wrap gap-1.5 sm:left-3 sm:right-3 sm:top-3 sm:gap-2">
           {animeMeta?.year ? (
-            <span className="border-[4px] border-black bg-[#fffdf7] px-3 py-1 text-xs font-black uppercase tracking-[0.12em] text-black shadow-sticker">
+            <span className="border-[3px] border-black bg-[#fffdf7] px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-black shadow-sticker sm:border-[4px] sm:px-3 sm:py-1 sm:text-xs">
               Year: {animeMeta.year}
             </span>
           ) : null}
           {tags.map((tag) => (
             <span
               key={tag}
-              className="border-[4px] border-black bg-[#cf1a4f] px-3 py-1 text-xs font-black uppercase tracking-[0.12em] text-white shadow-sticker"
+              className="border-[3px] border-black bg-[#cf1a4f] px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-white shadow-sticker sm:border-[4px] sm:px-3 sm:py-1 sm:text-xs"
             >
               {tag}
             </span>
@@ -175,7 +175,7 @@ export function SceneImageCard({
         </div>
 
         {canSlide ? (
-          <div className="absolute bottom-3 right-3 z-30 rounded-md bg-black/45 px-2 py-1 text-xs font-black text-white">
+          <div className="absolute bottom-2 right-2 z-30 rounded-md bg-black/45 px-2 py-1 text-xs font-black text-white sm:bottom-3 sm:right-3">
             {currentIndex + 1}/{safeImageUrls.length}
           </div>
         ) : null}

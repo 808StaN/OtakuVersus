@@ -30,8 +30,8 @@ export function HistoryPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="panel-title text-5xl">Matches History</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="panel-title text-4xl sm:text-5xl">Matches History</h1>
         <span className="ink-stamp">Archive</span>
       </div>
 
@@ -40,7 +40,7 @@ export function HistoryPage() {
           type="button"
           variant={mode === 'SINGLEPLAYER' ? 'primary' : 'secondary'}
           onClick={() => setMode('SINGLEPLAYER')}
-          className="focus:ring-0 focus:ring-offset-0"
+          className="flex-1 focus:ring-0 focus:ring-offset-0 sm:flex-none"
         >
           Singleplayer
         </Button>
@@ -48,7 +48,7 @@ export function HistoryPage() {
           type="button"
           variant={mode === 'MULTIPLAYER' ? 'primary' : 'secondary'}
           onClick={() => setMode('MULTIPLAYER')}
-          className="focus:ring-0 focus:ring-offset-0"
+          className="flex-1 focus:ring-0 focus:ring-offset-0 sm:flex-none"
         >
           Multiplayer
         </Button>
@@ -56,7 +56,7 @@ export function HistoryPage() {
 
       <div className="manga-panel-lift overflow-hidden border-[4px] border-black bg-[#f8f3e6] shadow-sticker">
         <div className="overflow-x-auto">
-          <table className="min-w-full text-left text-sm text-base-ink/90">
+          <table className="min-w-[520px] text-left text-sm text-base-ink/90 sm:min-w-full">
             <thead className="bg-[#ffd000] text-xs uppercase tracking-[0.15em] text-black">
               <tr>
                 <th className="px-3 py-2">Date</th>
