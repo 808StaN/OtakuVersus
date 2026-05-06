@@ -51,12 +51,12 @@ export function GameModeSection({
 
           <div className="-mt-1 flex flex-col gap-2 pt-0">
             {!isAuthenticated ? (
-              <div className="relative min-h-[168px] sm:hidden">
+              <div className="relative mt-4 min-h-[178px] sm:hidden">
                 <div className="absolute bottom-0 left-0 w-[150px]">
                   <img
                     src="/images/anime_boy_pointing.png"
                     alt="Anime boy pointing up"
-                    className="relative z-20 -mb-3 h-36 w-auto object-contain"
+                    className="relative z-20 -mb-1 h-32 w-auto object-contain"
                     loading="lazy"
                   />
                   <Link to="/register">
@@ -100,7 +100,7 @@ export function GameModeSection({
         </div>
 
         <div className="space-y-3 panel-overlap-right">
-          <div className="mx-auto inline-flex w-fit rotate-[-1deg] border-[4px] border-black bg-[#ffd000] px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] shadow-sticker sm:mx-0 sm:text-xs">
+          <div className="mx-auto flex w-fit rotate-[-1deg] border-[4px] border-black bg-[#ffd000] px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] shadow-sticker sm:mx-0 sm:text-xs">
             Choose Your Mode
           </div>
           <div className="manga-panel p-3 sm:p-4">
