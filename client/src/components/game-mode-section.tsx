@@ -50,6 +50,17 @@ export function GameModeSection({
           </div>
 
           <div className="-mt-1 flex flex-col gap-2 pt-0">
+            {isAuthenticated ? (
+              <div className="relative min-h-[118px] sm:hidden">
+                <img
+                  src="/images/anime_boy_pointing.png"
+                  alt="Anime boy pointing up"
+                  className="absolute bottom-0 left-2 h-36 w-auto object-contain"
+                  loading="lazy"
+                />
+              </div>
+            ) : null}
+
             {!isAuthenticated ? (
               <div className="relative mt-4 min-h-[178px] sm:hidden">
                 <div className="absolute bottom-0 left-0 w-[150px]">
