@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Button } from './ui/button';
+import { cn } from '../utils/cn';
 
 export function GameModeSection({
   isAuthenticated,
@@ -49,13 +50,13 @@ export function GameModeSection({
             goal: prove you're the biggest anime fan.
           </div>
 
-          <div className="-mt-1 flex flex-col gap-2 pt-0">
+          <div className="-mt-1 flex flex-col gap-2 pt-2">
             {isAuthenticated ? (
-              <div className="relative -mb-7 min-h-[150px] sm:hidden">
+              <div className="relative -mb-16 min-h-[150px] sm:hidden pt-1">
                 <img
                   src="/images/anime_boy_pointing.png"
                   alt="Anime boy pointing up"
-                  className="absolute bottom-0 left-4 z-20 h-40 w-auto object-contain"
+                  className="absolute bottom-0 left-4 z-0 h-40 w-auto object-contain"
                   loading="lazy"
                 />
               </div>
@@ -111,7 +112,12 @@ export function GameModeSection({
         </div>
 
         <div className="space-y-3 panel-overlap-right">
-          <div className="ml-auto mr-8 flex w-fit rotate-[-1deg] border-[4px] border-black bg-[#ffd000] px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] shadow-sticker sm:mx-auto sm:text-xs lg:mx-0">
+          <div
+            className={cn(
+              'flex w-fit rotate-[-1deg] border-[4px] border-black bg-[#ffd000] px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] shadow-sticker sm:mx-auto sm:text-xs lg:mx-0',
+              isAuthenticated ? 'ml-auto mr-2' : 'mx-auto'
+            )}
+          >
             Choose Your Mode
           </div>
           <div className="manga-panel p-3 sm:p-4">
