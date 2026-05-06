@@ -59,12 +59,12 @@ export function GameModeSection({
                     className="relative z-10 -mb-1 ml-2 h-32 w-auto -translate-y-0.5 object-contain"
                     loading="lazy"
                   />
-                  <Link to="/register">
-                    <Button size="lg" className="relative z-20 ml-4 w-[208px] px-1 py-1 text-xs leading-tight">
-                      <span className="block">Create</span> <span className="block">Account</span>
-                    </Button>
-                  </Link>
                 </div>
+                <Link to="/register" className="absolute bottom-0 left-4 right-4 z-20">
+                  <Button size="lg" className="w-full px-1 py-1 text-xs leading-tight">
+                    <span className="block">Create</span> <span className="block">Account</span>
+                  </Button>
+                </Link>
 
                 <div className="ml-[150px] -mt-3 text-center">
                   <p className="mb-2 text-xs font-black uppercase tracking-[0.12em] text-[#ffd000]">Join Us</p>
