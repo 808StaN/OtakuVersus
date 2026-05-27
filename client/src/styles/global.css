@@ -304,11 +304,11 @@ a:focus-visible,
   }
 
   .panel-overlap-right {
-    transform: translateX(0.2rem) rotate(0.8deg);
+    transform: translateX(0.2rem) rotate(0.8deg) translateZ(0);
   }
 
   .panel-overlap-left {
-    transform: translateX(-0.2rem) rotate(-0.8deg);
+    transform: translateX(-0.2rem) rotate(-0.8deg) translateZ(0);
   }
 
   .sfx-bam {
@@ -396,11 +396,11 @@ a:focus-visible,
     }
 
     .panel-overlap-right {
-      transform: translateX(0.55rem) rotate(1deg);
+      transform: translateX(0.55rem) rotate(1deg) translateZ(0);
     }
 
     .panel-overlap-left {
-      transform: translateX(-0.55rem) rotate(-1deg);
+      transform: translateX(-0.55rem) rotate(-1deg) translateZ(0);
     }
 
   }
