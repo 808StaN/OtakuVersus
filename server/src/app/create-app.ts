@@ -9,10 +9,20 @@ import { apiRouter } from './router';
 
 export function createApp() {
   const app = express();
+  const allowedOrigins = [env.CLIENT_URL];
+  if (env.NODE_ENV === 'development') {
+    // Vite dev server sometimes runs on 5173 or 5174 depending on environment
+    allowedOrigins.push('http://localhost:5173', 'http://localhost:5174');
+  }
 
   app.use(
     cors({
-      origin: env.CLIENT_URL,
+      origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) return callback(null, true);
+        return callback(new Error('CORS origin not allowed'), false);
+      },
       credentials: true
     })
   );
