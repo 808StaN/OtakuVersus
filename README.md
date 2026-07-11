@@ -23,6 +23,8 @@ Players identify anime titles from scene images, earn points, and compete in ran
 - [Product Highlights](#product-highlights)
 - [Technical Decisions](#technical-decisions)
 - [How to Add Anime (Contributor Workflow)](#how-to-add-anime-contributor-workflow)
+- [Database Configuration](#database-configuration)
+- [Migrate Supabase Postgres to Neon](#migrate-supabase-postgres-to-neon)
 - [Architecture Notes](#architecture-notes)
 - [Roadmap](#roadmap)
 
@@ -225,6 +227,75 @@ In PR description include:
 - TanStack Query handles async state and cache on the frontend.
 - Auth context keeps JWT flow simple and explicit.
 - Multiplayer and ELO are implemented server-side to keep scoring authoritative.
+
+---
+
+## Database Configuration
+
+The server uses Prisma with standard PostgreSQL connections:
+
+- `DATABASE_URL` is the pooled runtime connection used by the API.
+- `DIRECT_URL` is the direct connection used by Prisma Migrate and administrative commands.
+
+For Neon, copy the pooled connection string into `DATABASE_URL` and the direct connection string into `DIRECT_URL`. Both connections must use SSL. Keep `JWT_SECRET` unchanged when changing database providers so existing access tokens remain valid.
+
+## Migrate Supabase Postgres to Neon
+
+The application does not use Supabase Auth. Registered accounts, bcrypt password hashes, guest accounts, and game history live in the Prisma-managed `public` schema and are migrated with the rest of the database.
+
+### Prerequisites
+
+- Create an empty Neon project in the same or a nearby region and, when possible, use the same PostgreSQL major version as Supabase.
+- Install `pg_dump` and `pg_restore` and make them available in `PATH`.
+- Use direct, non-pooled connection strings for both the source and target migration connections.
+- Schedule a maintenance window and stop the API before the final dump so no writes occur during migration.
+
+### Export and restore
+
+From PowerShell at the repository root, set the two temporary migration variables. Do not commit either value:
+
+```powershell
+$env:SOURCE_DATABASE_URL = '<supabase-direct-connection-string>'
+$env:TARGET_DATABASE_URL = '<neon-direct-connection-string>'
+```
+
+Run the migration script. The explicit switch is required because restore removes existing objects from the target `public` schema:
+
+```powershell
+& ".\server\scripts\migrate-supabase-to-neon.ps1" `
+  -BackupPath "$env:TEMP\otakuversus-supabase.dump" `
+  -ConfirmTargetReset
+```
+
+The script uses a custom-format dump and restores it with `--no-owner` and `--no-acl`, preventing Supabase-specific ownership and privileges from being copied to Neon.
+
+### Verify before cutover
+
+Keep the API stopped and compare all application record counts:
+
+```powershell
+npm run db:verify-migration --workspace server
+```
+
+The verification command reads `SOURCE_DATABASE_URL` and `TARGET_DATABASE_URL`. It compares users, registered and guest account totals, sessions, rounds, guesses, anime titles, and scenes.
+
+Update the deployed server environment only after verification succeeds:
+
+```text
+DATABASE_URL=<neon-pooled-connection-string>
+DIRECT_URL=<neon-direct-connection-string>
+```
+
+Do not change `JWT_SECRET` and do not run `prisma:seed`, because the seed deletes existing application data. Check migration state and then build the application:
+
+```powershell
+npm exec --workspace server -- prisma migrate status
+npm run build
+```
+
+Before ending maintenance mode, verify login, registration, `/api/auth/me`, guest play, completed games, ELO, history, and leaderboards. Keep Supabase unchanged as a short-lived rollback database. If rollback is required after writes have been enabled on Neon, those new writes must be reconciled manually.
+
+Supabase Storage is an optional, currently inactive provider and is not migrated by this database procedure. Neon does not provide object storage.
 
 ---
 

@@ -12,6 +12,7 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
     "prisma:seed": "tsx prisma/seed.ts",
+    "db:verify-migration": "tsx scripts/verify-database-migration.ts",
     "anime:sync": "tsx scripts/sync-anime-titles.ts",
     "lint": "tsc --noEmit",
     "format": "echo \"Formatting handled by editor/CI\""
